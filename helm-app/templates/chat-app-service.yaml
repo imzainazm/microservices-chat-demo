@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.chatApp.service.name }}
+  namespace: {{ .Values.chatApp.namespace }}
+spec:
+  type: {{ .Values.chatApp.service.type }}
+  selector:
+    app: {{ .Values.chatApp.name }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.chatApp.service.port }}
+      targetPort: {{ .Values.chatApp.service.targetPort }}
+      nodePort: {{ .Values.chatApp.service.nodePort }}
