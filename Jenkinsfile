@@ -157,7 +157,8 @@ pipeline {
     post {
         success {
             script {
-                def trigger = currentBuild.causes.size() > 0 ? currentBuild.causes[0].shortDescription : "Manually triggered"
+                def causes = currentBuild.rawBuild.getCauses()
+                def trigger = causes.size() > 0 ? causes[0].shortDescription : "Manually triggered"
                 slackSend(
                     botUser: true,
                     channel: SLACK_CHANNEL,
@@ -169,7 +170,8 @@ pipeline {
         }
         failure {
             script {
-                def trigger = currentBuild.causes.size() > 0 ? currentBuild.causes[0].shortDescription : "Manually triggered"
+                def causes = currentBuild.rawBuild.getCauses()
+                def trigger = causes.size() > 0 ? causes[0].shortDescription : "Manually triggered"
                 slackSend(
                     botUser: true,
                     channel: SLACK_CHANNEL,
