@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: my-app-namespace
+data:
+  API_GATEWAY_URI: "http://172.29.25.105:32000"
+  phpmyadmin-config.user.inc.php: |
+    <?php
+      $i++;
+      $cfg['Servers'][$i]['verbose'] = 'chat-service';
+      $cfg['Servers'][$i]['host'] = 'chat-service-db';
+      $cfg['Servers'][$i]['port'] = '';
+      $cfg['Servers'][$i]['socket'] = '';
+      $cfg['Servers'][$i]['connect_type'] = 'tcp';
+      $cfg['Servers'][$i]['extension'] = 'mysqli';
+      $cfg['Servers'][$i]['auth_type'] = 'config';
+      $cfg['Servers'][$i]['user'] = 'root';
+      $cfg['Servers'][$i]['password'] = getenv('MYSQL_ROOT_PASSWORD');
+      $cfg['Servers'][$i]['AllowNoPassword'] = true;
+
+      $i++;
+      $cfg['Servers'][$i]['verbose'] = 'users-service';
+      $cfg['Servers'][$i]['host'] = 'users-service-db';
+      $cfg['Servers'][$i]['port'] = '';
+      $cfg['Servers'][$i]['socket'] = '';
+      $cfg['Servers'][$i]['connect_type'] = 'tcp';
+      $cfg['Servers'][$i]['extension'] = 'mysqli';
+      $cfg['Servers'][$i]['auth_type'] = 'config';
+      $cfg['Servers'][$i]['user'] = 'root';
+      $cfg['Servers'][$i]['password'] = getenv('MYSQL_ROOT_PASSWORD');
+      $cfg['Servers'][$i]['AllowNoPassword'] = true;
