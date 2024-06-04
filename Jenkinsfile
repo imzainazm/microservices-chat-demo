@@ -157,26 +157,24 @@ pipeline {
     post {
         success {
             script {
-                def causes = currentBuild.rawBuild.getCauses()
-                def trigger = causes.size() > 0 ? causes[0].shortDescription : "Manually triggered"
+                def cause = currentBuild.causes[0]?.shortDescription ?: "Manually triggered"
                 slackSend(
                     botUser: true,
                     channel: SLACK_CHANNEL,
                     color: '#00ff00',
-                    message: "Pipeline Succeeded\nTriggered by: ${trigger}\nUpdated Services: ${env.CHANGED_SERVICES.join(', ')}\nEnvironment: ${env.JOB_NAME}",
+                    message: "Pipeline Succeeded\nTriggered by: ${cause}\nUpdated Services: ${env.CHANGED_SERVICES.join(', ')}\nEnvironment: ${env.JOB_NAME}",
                     tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
                 )
             }
         }
         failure {
             script {
-                def causes = currentBuild.rawBuild.getCauses()
-                def trigger = causes.size() > 0 ? causes[0].shortDescription : "Manually triggered"
+                def cause = currentBuild.causes[0]?.shortDescription ?: "Manually triggered"
                 slackSend(
                     botUser: true,
                     channel: SLACK_CHANNEL,
                     color: '#ff0000',
-                    message: "Pipeline Failed\nTriggered by: ${trigger}\nUpdated Services: ${env.CHANGED_SERVICES.join(', ')}\nEnvironment: ${env.JOB_NAME}",
+                    message: "Pipeline Failed\nTriggered by: ${cause}\nUpdated Services: ${env.CHANGED_SERVICES.join(', ')}\nEnvironment: ${env.JOB_NAME}",
                     tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
                 )
             }
