@@ -154,7 +154,7 @@ pipeline {
         }
     }
 
-    post {
+     post {
         success {
             script {
                 def message = "Build SUCCESSFUL\nTriggered by: ${currentBuild.description}\nUpdated Services: ${env.CHANGED_SERVICES.join(', ')}\nEnvironment: ${env.JOB_NAME}\n"
