@@ -1,24 +1,9 @@
-def slackNotification(webhookUrl, message) {
-    def payload = toJson([text: message])
-    httpRequest(httpMode: 'POST', contentType: 'APPLICATION_JSON', requestBody: payload, url: webhookUrl)
-}
-
-def toJson(Map map) {
-    def builder = new groovy.json.JsonBuilder()
-    builder {
-        map.each { key, value ->
-            delegate."$key"(value)
-        }
-    }
-    builder.toString()
-}
-
 pipeline {
     agent any
     environment {
         DOCKER_CREDENTIALS_ID = 'c1269293-12a7-4ae4-a1fe-b048736d5658'
         SLACK_CHANNEL = '#pipeline-notifications'
-        WEBHOOK_URL = credentials('slack-webhook')
+        SLACK_TOKEN_CREDENTIAL_ID = 'slack-token'
     }
 
     stages {
@@ -172,22 +157,25 @@ pipeline {
     post {
         success {
             script {
-                def message = "Build SUCCESSFUL\nTriggered by: ${currentBuild.description}\nUpdated Services: ${env.CHANGED_SERVICES.join(', ')}\nEnvironment: ${env.JOB_NAME}\n"
-                echo "Sending Slack notification: ${message}"
-                slackNotification(WEBHOOK_URL, message)
+                slackSend(
+                    botUser: true,
+                    channel: SLACK_CHANNEL,
+                    color: '#00ff00',
+                    message: "Build SUCCESSFUL\nTriggered by: ${currentBuild.description}\nEnvironment: ${env.JOB_NAME}",
+                    tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
+                )
             }
         }
         failure {
             script {
-                def message = "Build FAILED\nTriggered by: ${currentBuild.description}\nUpdated Services: ${env.CHANGED_SERVICES.join(', ')}\nEnvironment: ${env.JOB_NAME}\n"
-                echo "Sending Slack notification: ${message}"
-                slackNotification(WEBHOOK_URL, message)
+                slackSend(
+                    botUser: true,
+                    channel: SLACK_CHANNEL,
+                    color: '#ff0000',
+                    message: "Build FAILED\nTriggered by: ${currentBuild.description}\nEnvironment: ${env.JOB_NAME}",
+                    tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
+                )
             }
         }
     }
-}
-
-def slackNotification(webhookUrl, message) {
-    def payload = JsonOutput.toJson([text: message])
-    httpRequest(httpMode: 'POST', contentType: 'APPLICATION_JSON', requestBody: payload, url: webhookUrl)
 }
