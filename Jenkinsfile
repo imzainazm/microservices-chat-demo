@@ -5,7 +5,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Checkout your source code from your GitHub repository
-                git url: 'https://github.com/imzainazm/microservices-chat-demo.git', branch: 'feature/jenkins-cicd'
+                git url: 'https://github.com/imzainazm/microservices-chat-demo.git', branch: 'develop'
             }
         }
 
