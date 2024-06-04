@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - api-gateway-service.yaml
+  - api-gateway.yaml
+  - chat-app-service.yaml
+  - chat-app.yaml 
+  - chat-service-db-service.yaml
+  - chat-service-db.yaml 
+  - chat-service-service.yaml 
+  - chat-service.yaml 
+  - configMap.yaml
+  - namespace.yaml
+  - phpmyadmin-service.yaml
+  - phpmyadmin.yaml 
+  - secret.yaml 
+  - users-service-db-service.yaml
+  - users-service-db.yaml 
+  - users-service-service.yaml 
+  - users-service.yaml 
+  
