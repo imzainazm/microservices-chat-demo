@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.apiGateway.name }}
+  namespace: {{ .Values.apiGateway.namespace }}
+spec:
+  replicas: {{ .Values.apiGateway.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.apiGateway.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.apiGateway.name }}
+    spec:
+      containers:
+      - name: {{ .Values.apiGateway.containerName }}
+        image: {{ .Values.apiGateway.image.repository }}:{{ .Values.apiGateway.image.tag }}
+        ports:
+        - containerPort: {{ .Values.apiGateway.containerPort }}
