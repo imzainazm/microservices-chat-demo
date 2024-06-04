@@ -49,22 +49,105 @@ pipeline {
             }
         }
 
-        stage('Build and Push Docker Images') {
+        stage('Build Docker Images') {
             when {
                 expression { env.CHANGED_SERVICES }
             }
-            steps {
-                script {
-                    // List of microservice directories
-                    def microservices = env.CHANGED_SERVICES
-                    
-                    for (microservice in microservices) {
-                        // Build and push Docker image
-                        sh """
-                            docker build -t imzainazm/${microservice}:latest ./${microservice}
-                            docker login -u your-dockerhub-username -p your-dockerhub-password
-                            docker push imzainazm/${microservice}:latest
-                        """
+            parallel {
+                stage('Build API Gateway') {
+                    when {
+                        expression { env.CHANGED_SERVICES.contains('api-gateway') }
+                    }
+                    steps {
+                        script {
+                            sh 'docker build -t imzainazm/api-gateway:latest ./api-gateway'
+                        }
+                    }
+                }
+                stage('Build Users Service') {
+                    when {
+                        expression { env.CHANGED_SERVICES.contains('users-service') }
+                    }
+                    steps {
+                        script {
+                            sh 'docker build -t imzainazm/users-service:latest ./users-service'
+                        }
+                    }
+                }
+                stage('Build Chat Service') {
+                    when {
+                        expression { env.CHANGED_SERVICES.contains('chat-service') }
+                    }
+                    steps {
+                        script {
+                            sh 'docker build -t imzainazm/chat-service:latest ./chat-service'
+                        }
+                    }
+                }
+                stage('Build Chat App') {
+                    when {
+                        expression { env.CHANGED_SERVICES.contains('chat-app') }
+                    }
+                    steps {
+                        script {
+                            sh 'docker build -t imzainazm/chat-app:latest ./chat-app'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Push Docker Images to Docker Hub') {
+            when {
+                expression { env.CHANGED_SERVICES }
+            }
+            parallel {
+                stage('Push API Gateway') {
+                    when {
+                        expression { env.CHANGED_SERVICES.contains('api-gateway') }
+                    }
+                    steps {
+                        script {
+                            docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
+                                docker.image('imzainazm/api-gateway:latest').push()
+                            }
+                        }
+                    }
+                }
+                stage('Push Users Service') {
+                    when {
+                        expression { env.CHANGED_SERVICES.contains('users-service') }
+                    }
+                    steps {
+                        script {
+                            docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
+                                docker.image('imzainazm/users-service:latest').push()
+                            }
+                        }
+                    }
+                }
+                stage('Push Chat Service') {
+                    when {
+                        expression { env.CHANGED_SERVICES.contains('chat-service') }
+                    }
+                    steps {
+                        script {
+                            docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
+                                docker.image('imzainazm/chat-service:latest').push()
+                            }
+                        }
+                    }
+                }
+                stage('Push Chat App') {
+                    when {
+                        expression { env.CHANGED_SERVICES.contains('chat-app') }
+                    }
+                    steps {
+                        script {
+                            docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
+                                docker.image('imzainazm/chat-app:latest').push()
+                            }
+                        }
                     }
                 }
             }
