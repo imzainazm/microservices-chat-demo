@@ -161,7 +161,7 @@ pipeline {
                     botUser: true,
                     channel: SLACK_CHANNEL,
                     color: '#00ff00',
-                    message: "Build SUCCESSFUL\nTriggered by: ${currentBuild.description}\nEnvironment: ${env.JOB_NAME}",
+                    message: "Pipeline Succeeded\nTriggered by: ${currentBuild.causes[0].shortDescription}\nUpdated Services: ${env.CHANGED_SERVICES.join(', ')}\nEnvironment: ${env.JOB_NAME}",
                     tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
                 )
             }
@@ -172,7 +172,7 @@ pipeline {
                     botUser: true,
                     channel: SLACK_CHANNEL,
                     color: '#ff0000',
-                    message: "Build FAILED\nTriggered by: ${currentBuild.description}\nEnvironment: ${env.JOB_NAME}",
+                    message: "Pipeline Failed\nTriggered by: ${currentBuild.causes[0].shortDescription}\nUpdated Services: ${env.CHANGED_SERVICES.join(', ')}\nEnvironment: ${env.JOB_NAME}",
                     tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
                 )
             }
