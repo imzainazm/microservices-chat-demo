@@ -6,6 +6,9 @@ pipeline {
         SLACK_WEBHOOK_URL = credentials('slack-webhook')
     }
 
+    @Grab(group='org.codehaus.groovy', module='groovy-json', version='3.0.8')
+    import groovy.json.JsonOutput
+
     stages {
         stage('Checkout') {
             steps {
