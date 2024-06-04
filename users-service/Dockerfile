@@ -2,6 +2,10 @@ FROM node:14
 
 WORKDIR /opt/app
 
-RUN yarn
+COPY package.json yarn.lock ./
 
-CMD yarn watch
+RUN yarn install
+
+COPY . .
+
+CMD ["yarn", "watch"]
