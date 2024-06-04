@@ -1,13 +1,25 @@
+def slackNotification(webhookUrl, message) {
+    def payload = toJson([text: message])
+    httpRequest(httpMode: 'POST', contentType: 'APPLICATION_JSON', requestBody: payload, url: webhookUrl)
+}
+
+def toJson(Map map) {
+    def builder = new groovy.json.JsonBuilder()
+    builder {
+        map.each { key, value ->
+            delegate."$key"(value)
+        }
+    }
+    builder.toString()
+}
+
 pipeline {
     agent any
     environment {
         DOCKER_CREDENTIALS_ID = 'c1269293-12a7-4ae4-a1fe-b048736d5658'
         SLACK_CHANNEL = '#pipeline-notifications'
-        SLACK_WEBHOOK_URL = credentials('slack-webhook')
+        WEBHOOK_URL = credentials('slack-webhook')
     }
-
-    @Grab(group='org.codehaus.groovy', module='groovy-json', version='3.0.8')
-    import groovy.json.JsonOutput
 
     stages {
         stage('Checkout') {
@@ -157,19 +169,19 @@ pipeline {
         }
     }
 
-     post {
+    post {
         success {
             script {
                 def message = "Build SUCCESSFUL\nTriggered by: ${currentBuild.description}\nUpdated Services: ${env.CHANGED_SERVICES.join(', ')}\nEnvironment: ${env.JOB_NAME}\n"
                 echo "Sending Slack notification: ${message}"
-                slackNotification(SLACK_WEBHOOK_URL, message)
+                slackNotification(WEBHOOK_URL, message)
             }
         }
         failure {
             script {
                 def message = "Build FAILED\nTriggered by: ${currentBuild.description}\nUpdated Services: ${env.CHANGED_SERVICES.join(', ')}\nEnvironment: ${env.JOB_NAME}\n"
                 echo "Sending Slack notification: ${message}"
-                slackNotification(SLACK_WEBHOOK_URL, message)
+                slackNotification(WEBHOOK_URL, message)
             }
         }
     }
