@@ -15,6 +15,13 @@ spec:
     spec:
       containers:
       - name: users-service
-        image: imzainazm/users-service
+        image: imzainazm/users-service:latest
         ports:
         - containerPort: 7101
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "300Mi"
+            cpu: "250m"
