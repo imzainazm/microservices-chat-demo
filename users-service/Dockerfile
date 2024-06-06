@@ -1,4 +1,4 @@
-FROM node:14
+FROM node:14.15.0
 
 WORKDIR /opt/app
 
@@ -8,4 +8,4 @@ RUN yarn install
 
 COPY . .
 
-CMD ["yarn", "watch"]
+CMD yarn db:migrate && yarn watch
