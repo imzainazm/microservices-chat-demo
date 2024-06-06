@@ -47,7 +47,7 @@ chatServiceDb:
   containerPort: 3306
   volumeMounts:
     name: mysql-storage
-    mountPath: /var/lib/postgresql/data
+    mountPath: /var/lib/mysql
   volumeClaimTemplates:
     name: mysql-storage
     accessModes: ReadWriteOnce
@@ -117,7 +117,7 @@ usersServiceDb:
     tag: 5.7.20
   containerPort: 3306
   volumeMounts:
-    mountPath: /var/lib/postgresql/data
+    mountPath: /var/lib/mysql
   volumeClaim:
     accessMode: ReadWriteOnce
     storage: 1Gi
