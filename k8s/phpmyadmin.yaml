@@ -21,6 +21,13 @@ spec:
         volumeMounts:
         - name: config-volume
           mountPath: /etc/phpmyadmin
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "300Mi"
+            cpu: "250m"
       volumes:
       - name: config-volume
         hostPath:
