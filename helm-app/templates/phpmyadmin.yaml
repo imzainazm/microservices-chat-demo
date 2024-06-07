@@ -12,6 +12,9 @@ spec:
     metadata:
       labels:
         app: {{ .Values.phpmyadmin.name }}
+        {{- range $key, $value := .Values.phpmyadmin.labels }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
     spec:
       containers:
       - name: {{ .Values.phpmyadmin.containerName }}
