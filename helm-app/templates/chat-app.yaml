@@ -12,6 +12,9 @@ spec:
     metadata:
       labels:
         app: {{ .Values.chatApp.name }}
+        {{- range .Values.chatApp.labels -}}
+        {{ .key }}: {{ .value }}
+        {{- end -}}
     spec:
       containers:
       - name: {{ .Values.chatApp.containerName }}
