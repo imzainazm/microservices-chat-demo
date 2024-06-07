@@ -12,6 +12,9 @@ spec:
     metadata:
       labels:
         app: {{ .Values.apiGateway.name }}
+        {{- range .Values.apiGateway.labels }}
+        {{ .key }}: {{ .value }}
+        {{- end }}
     spec:
       containers:
       - name: {{ .Values.apiGateway.containerName }}
