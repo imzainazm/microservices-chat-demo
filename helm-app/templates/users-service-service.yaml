@@ -6,9 +6,11 @@ metadata:
 spec:
   selector:
     app: {{ .Values.usersService.service.selector.app }}
+  type: {{ .Values.usersService.service.type }}
   ports:
   - protocol: TCP
     port: {{ .Values.usersService.service.ports.port }}
     targetPort: {{ .Values.usersService.service.ports.targetPort }}
-  type: {{ .Values.usersService.service.type }}
-
+    {{- if eq .Values.usersService.service.type "NodePort" }}
+    nodePort: {{ .Values.usersService.service.nodePort }}
+    {{- end }}
