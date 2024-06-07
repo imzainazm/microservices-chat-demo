@@ -13,6 +13,9 @@ spec:
     metadata:
       labels:
         app: {{ .Values.chatServiceDb.selector.app }}
+        {{- range .Values.chatServiceDb.labels }}
+        {{ .key }}: {{ .value }}
+        {{- end }}
     spec:   
       containers:
       - name: {{ .Values.chatServiceDb.containerName }}
