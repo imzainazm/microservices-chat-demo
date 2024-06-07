@@ -13,6 +13,9 @@ spec:
     metadata:
       labels:
         app: {{ .Values.usersServiceDb.selector.app }}
+        {{- range $key, $value := .Values.usersServiceDb.labels }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
     spec:
       containers:
       - name: mysql
