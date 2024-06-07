@@ -13,8 +13,8 @@ spec:
     metadata:
       labels:
         app: {{ .Values.chatServiceDb.selector.app }}
-        {{- range .Values.chatServiceDb.labels }}
-        {{ .key }}: {{ .value }}
+        {{- range $key, $value := .Values.chatServiceDb.labels }}
+        {{ $key }}: {{ $value }}
         {{- end }}
     spec:   
       containers:
