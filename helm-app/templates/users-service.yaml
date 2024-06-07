@@ -12,6 +12,9 @@ spec:
     metadata:
       labels:
         app: {{ .Values.usersService.deployment.selector.app }}
+        {{- range $key, $value := .Values.usersService.labels }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
     spec:
       containers:
       - name: {{ .Values.usersService.deployment.containerName }}
