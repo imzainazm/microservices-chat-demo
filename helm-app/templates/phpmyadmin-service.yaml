@@ -11,4 +11,6 @@ spec:
     - protocol: TCP
       port: {{ .Values.phpmyadmin.service.port }}
       targetPort: {{ .Values.phpmyadmin.service.targetPort }}
+      {{- if eq .Values.phpmyadmin.service.type "NodePort" }}
       nodePort: {{ .Values.phpmyadmin.service.nodePort }}
+      {{- end }}
