@@ -22,12 +22,6 @@ spec:
         - name: config-volume
           mountPath: {{ .Values.phpmyadmin.volumeMounts.mountPath }}
           subPath: {{ .Values.phpmyadmin.volumeMounts.subPath }}
-        env:
-        - name: MYSQL_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.phpmyadmin.env.mysqlRootPasswordSecretName }}
-              key: {{ .Values.phpmyadmin.env.mysqlRootPasswordSecretKey }}
       volumes:
       - name: config-volume
         configMap:
