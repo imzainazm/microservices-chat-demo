@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ .Values.chatServiceDb.name }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.chatServiceDb.namespace }}
 spec:
   serviceName: "{{ .Values.chatServiceDb.service.name }}"
   replicas: {{ .Values.chatServiceDb.replicas }}
@@ -13,6 +13,9 @@ spec:
     metadata:
       labels:
         app: {{ .Values.chatServiceDb.selector.app }}
+        {{- range $key, $value := .Values.chatServiceDb.labels }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
     spec:   
       containers:
       - name: {{ .Values.chatServiceDb.containerName }}
@@ -20,16 +23,10 @@ spec:
         ports:
         - containerPort: {{ .Values.chatServiceDb.containerPort }}
         env:
-        - name: MYSQL_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.chatServiceDb.secret.name }}
-              key: MYSQL_ROOT_PASSWORD
-        - name: MYSQL_DATABASE
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.chatServiceDb.secret.name }}
-              key: MYSQL_DATABASE
+          {{- range .Values.chatServiceDb.env }}
+          - name: {{ .name }}
+            value: {{ .value }}
+          {{- end }}
         volumeMounts:
         - name: {{ .Values.chatServiceDb.volumeMounts.name }}
           mountPath: {{ .Values.chatServiceDb.volumeMounts.mountPath }}
@@ -41,5 +38,3 @@ spec:
       resources:
         requests:
           storage: {{ .Values.chatServiceDb.volumeClaimTemplates.storage }}
-
-          
