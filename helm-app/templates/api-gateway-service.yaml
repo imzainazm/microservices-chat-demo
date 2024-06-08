@@ -11,4 +11,6 @@ spec:
     - protocol: TCP
       port: {{ .Values.apiGateway.service.port }}
       targetPort: {{ .Values.apiGateway.service.targetPort }}
+      {{- if eq .Values.apiGateway.service.type "NodePort" }}
       nodePort: {{ .Values.apiGateway.service.nodePort }}
+      {{- end }}
