@@ -12,6 +12,9 @@ spec:
     metadata:
       labels:
         app: {{ .Values.chatService.selector.app }}
+        {{- range $key, $value := .Values.chatService.labels }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
     spec:
       containers:
       - name: {{ .Values.chatService.containerName }}
