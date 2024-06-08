@@ -11,4 +11,6 @@ spec:
     - protocol: TCP
       port: {{ .Values.chatApp.service.port }}
       targetPort: {{ .Values.chatApp.service.targetPort }}
+      {{- if eq .Values.chatApp.service.type "NodePort" }}
       nodePort: {{ .Values.chatApp.service.nodePort }}
+      {{- end }}
