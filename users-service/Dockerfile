@@ -10,6 +10,4 @@ COPY . .
 
 RUN npm run build
 
-RUN npm run db:migrate
-
 CMD npm start
