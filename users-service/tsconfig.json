@@ -11,6 +11,9 @@
     "skipLibCheck": true,
     "strict": true,
     "strictPropertyInitialization": false,
-    "target": "es5"
-  }
+    "target": "es5",
+    "outDir": "./dist",
+    "lib": ["es2015", "dom"]
+  },
+  "include": ["src/**/*"],
 }
