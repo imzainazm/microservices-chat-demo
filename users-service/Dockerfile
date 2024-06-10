@@ -2,10 +2,14 @@ FROM node:14.15.0
 
 WORKDIR /opt/app
 
-COPY package.json yarn.lock ./
+COPY package.json ./
 
-RUN yarn install
+RUN npm install
 
 COPY . .
 
-CMD yarn db:migrate && yarn watch
+RUN npm run build
+
+RUN npm run db:migrate
+
+CMD npm start
