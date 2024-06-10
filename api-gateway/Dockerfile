@@ -4,8 +4,10 @@ WORKDIR /opt/app
 
 COPY package.json ./
 
-RUN yarn install
+RUN npm install
 
 COPY . .
 
-CMD ["yarn", "start"]
+RUN npm run build
+
+CMD ["node", "-r", "module-alias/register", "dist/index.js"]
