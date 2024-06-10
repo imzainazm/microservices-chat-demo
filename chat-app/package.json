@@ -13,6 +13,7 @@
     "typescript": "~4.2.3"
   },
   "scripts": {
+    "build": "parcel build src/index.html --dist-dir build --public-url ./",
     "watch": "parcel src/index.html --port=7001"
   },
   "dependencies": {
