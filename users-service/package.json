@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "license": "MIT",
   "scripts": {
+    "build": "tsc",
+    "start": "node -r module-alias/register dist/index.js",
     "db:migrate": "ts-node ./node_modules/typeorm/cli.js migration:run",
     "db:migrate:undo": "ts-node ./node_modules/typeorm/cli.js migration:revert",
     "watch": "ts-node-dev --respawn index.dev.ts"
@@ -33,6 +35,6 @@
     "uuid": "~8.3.2"
   },
   "_moduleAliases": {
-    "#root": "./src"
+    "#root": "dist"
   }
 }
