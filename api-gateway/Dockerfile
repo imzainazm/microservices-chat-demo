@@ -11,4 +11,3 @@ COPY . .
 RUN npm run build
 
 CMD ["node", "-r", "module-alias/register", "dist/index.js"]
-#for debugging
