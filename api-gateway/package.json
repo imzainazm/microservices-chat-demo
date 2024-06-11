@@ -4,8 +4,9 @@
   "license": "MIT",
   "scripts": {
     "watch": "ts-node-dev --respawn index.dev.ts",
-    "build": "tsc",
-    "start": "node -r module-alias/register dist/index.js"
+    "build": "npm run clean && tsc",
+    "start": "node -r module-alias/register dist/index.js",
+    "clean": "rm -rf dist"
   },
   "devDependencies": {
     "@types/config": "~0.0.38",
