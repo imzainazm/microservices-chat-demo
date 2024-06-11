@@ -8,8 +8,6 @@ RUN npm install
 
 COPY . .
 
-RUN rm -rf dist
-
-RUN npm run build
+RUN npm run clean && tsc
 
 CMD npm start
