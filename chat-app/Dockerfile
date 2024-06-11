@@ -1,11 +1,19 @@
-FROM node:16.0.0
+FROM node:16.16.0 AS build
 
-WORKDIR /opt/app
+WORKDIR /app
 
-COPY package.json ./
+COPY package.json tsconfig.json ./
 
 RUN yarn install
 
 COPY . .
 
-CMD ["yarn", "watch"]
+RUN yarn build
+
+FROM nginx:1.21.4-alpine
+
+COPY --from=build /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
