@@ -1,10 +1,10 @@
-FROM node:14.21.3
+FROM node:14.15.0
 
-WORKDIR /opt/app
+WORKDIR /app
 
-COPY package.json yarn.lock ./
+COPY package.json ./
 
-RUN npm install && npm install --save-dev @types/node@latest
+RUN npm install
 
 COPY . .
 
