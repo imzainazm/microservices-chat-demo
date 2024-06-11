@@ -35,6 +35,7 @@ pipeline {
                     env.CHANGED_SERVICES = []
                     if (changedFiles.any { it.startsWith('api-gateway/') }) {
                         env.CHANGED_SERVICES += 'api-gateway'
+                        echo "Changed Services: ${env.CHANGED_SERVICES}"
                     }
                     if (changedFiles.any { it.startsWith('users-service/') }) {
                         env.CHANGED_SERVICES += 'users-service'
