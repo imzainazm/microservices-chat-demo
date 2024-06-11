@@ -2,7 +2,7 @@ FROM node:14.21.3
 
 WORKDIR /opt/app
 
-COPY package.json ./
+COPY package.json yarn.lock ./
 
 RUN npm install
 
