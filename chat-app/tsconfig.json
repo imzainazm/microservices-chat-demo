@@ -4,8 +4,9 @@
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "jsx": "react-jsx",
+    "jsx": "react",
     "module": "commonjs",
+    "outDir": "./dist",
     "paths": {
       "#root/*": ["./src/*"],
       "#utils/*": ["./src/utils/*"]
