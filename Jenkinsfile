@@ -23,6 +23,15 @@ pipeline {
             }
         }
 
+        stage('get_commit_details') {
+        steps {
+            script {
+                env.GIT_COMMIT_MSG = sh (script: 'git log -1 --pretty=%B ${GIT_COMMIT}', returnStdout: true).trim()
+                env.GIT_AUTHOR = sh (script: 'git log -1 --pretty=%cn ${GIT_COMMIT}', returnStdout: true).trim()
+                }
+            }
+        }
+
         stage('Determine Changes') {
             steps {
                 script {
@@ -137,12 +146,11 @@ def sendSlackNotification(isSuccess) {
         botUser: true,
         channel: SLACK_CHANNEL,
         color: isSuccess ? '#00ff00' : '#ff0000',
-        message: "Pipeline ${pipelineStatus}\nTriggered by: ${triggerUser}\nChanged Services: ${changedServices}\nEnvironment: ${environmentName}",
+        message: "Pipeline ${pipelineStatus}\nTriggered by: ${env.GIT_AUTHOR}\nChanged Services: ${env.changedServices}\nEnvironment: ${environmentName}",
         tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
     )
 }
 
 def cleanupImages() {
-    // Implement cleanup logic here to remove Docker images after pipeline execution
     sh 'docker system prune -af'
 }
