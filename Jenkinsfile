@@ -10,7 +10,6 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
-                    // Checkout your source code from your GitHub repository
                     def scmVars = checkout scm: [
                         $class: 'GitSCM',
                         branches: [[name: '*/develop']],
@@ -26,7 +25,6 @@ pipeline {
         stage('Determine Changes') {
             steps {
                 script {
-                    // Determine which services have changed
                     def changedFiles = sh(
                         script: 'git diff --name-only HEAD~1 HEAD',
                         returnStdout: true
@@ -173,7 +171,7 @@ pipeline {
                     botUser: true,
                     channel: SLACK_CHANNEL,
                     color: '#ff0000',
-                    message: "Pipeline Succeeded\n Environment: ${env.JOB_NAME}",
+                    message: "Pipeline Failed\n Environment: ${env.JOB_NAME}",
                     tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
                 )
             }
