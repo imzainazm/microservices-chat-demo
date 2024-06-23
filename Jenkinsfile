@@ -23,15 +23,6 @@ pipeline {
             }
         }
 
-        stage('get_commit_details') {
-        steps {
-            script {
-                env.GIT_COMMIT_MSG = sh (script: 'git log -1 --pretty=%B ${GIT_COMMIT}', returnStdout: true).trim()
-                env.GIT_AUTHOR = sh (script: 'git log -1 --pretty=%cn ${GIT_COMMIT}', returnStdout: true).trim()
-                }
-            }
-        }
-
         stage('Determine Changes') {
             steps {
                 script {
@@ -109,6 +100,15 @@ pipeline {
         }
     }
 
+    stage('get_commit_details') {
+        steps {
+            script {
+                env.GIT_COMMIT_MSG = sh (script: 'git log -1 --pretty=%B ${GIT_COMMIT}', returnStdout: true).trim()
+                env.GIT_AUTHOR = sh (script: 'git log -1 --pretty=%cn ${GIT_COMMIT}', returnStdout: true).trim()
+                }
+            }
+        }
+
     post {
         success {
             script {
@@ -124,6 +124,8 @@ pipeline {
         }
     }
 }
+
+def lastCommiterEmail = sh(returnStdout: true, script: 'git log --format="%ae" | head -1').trim()
 
 def dockerBuild(imageName, tag, dockerfilePath) {
     sh "docker build -t ${imageName}:latest -t ${imageName}:${tag} ${dockerfilePath}"
@@ -146,7 +148,7 @@ def sendSlackNotification(isSuccess) {
         botUser: true,
         channel: SLACK_CHANNEL,
         color: isSuccess ? '#00ff00' : '#ff0000',
-        message: "Pipeline ${pipelineStatus}\nTriggered by: ${env.GIT_AUTHOR}\nChanged Services: ${env.changedServices}\nEnvironment: ${environmentName}",
+        message: "Pipeline ${pipelineStatus}\nTriggered by: ${lastCommiterEmail}\nChanged Services: ${env.changedServices}\nEnvironment: ${environmentName}",
         tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
     )
 }
