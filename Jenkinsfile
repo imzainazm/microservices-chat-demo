@@ -157,7 +157,7 @@ def sendSlackNotification(isSuccess) {
         botUser: true,
         channel: SLACK_CHANNEL,
         color: isSuccess ? '#00ff00' : '#ff0000',
-        message: "Pipeline ${pipelineStatus}\nCommitter Name: ${authorName}\nChanged Services: ${env.changedServices}\nEnvironment: ${environmentName}\n",
+        message: "Pipeline ${pipelineStatus}\n${currentBuild.description}\nChanged Services: ${env.changedServices}\nEnvironment: ${environmentName}\n",
         tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
     )
 }
