@@ -6,6 +6,7 @@ pipeline {
         SLACK_CHANNEL = '#pipeline-notifications'
         SLACK_TOKEN_CREDENTIAL_ID = 'slack-token'
         GIT_COMMIT = sh(script: 'git rev-parse --verify HEAD', returnStdout: true).trim()
+        CHANGED_SERVICES = ""
     }
 
     stages {
@@ -34,21 +35,22 @@ pipeline {
                         returnStdout: true
                     ).trim().split('\n')
 
-                    env.CHANGED_SERVICES = []
+                    def changedServices = []
                     if (changedFiles.any { it.startsWith('api-gateway/') }) {
-                        env.CHANGED_SERVICES += 'api-gateway'
+                        changedServices.add('api-gateway')
                     }
                     if (changedFiles.any { it.startsWith('users-service/') }) {
-                        env.CHANGED_SERVICES += 'users-service'
+                        changedServices.add('users-service')
                     }
                     if (changedFiles.any { it.startsWith('chat-service/') }) {
-                        env.CHANGED_SERVICES += 'chat-service'
+                        changedServices.add('chat-service')
                     }
                     if (changedFiles.any { it.startsWith('chat-app/') }) {
-                        env.CHANGED_SERVICES += 'chat-app'
+                        changedServices.add('chat-app')
                     }
 
-                    echo "Changed Services: ${env.CHANGED_SERVICES.join(', ')}"
+                    env.CHANGED_SERVICES = changedServices.join(',')
+                    echo "Changed Services: ${env.CHANGED_SERVICES}"
                 }
             }
         }
@@ -127,7 +129,7 @@ def dockerPush(imageName, tag) {
 def sendSlackNotification(isSuccess) {
     def pipelineStatus = isSuccess ? "Succeeded" : "Failed"
     def triggerUser = currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)?.userName ?: 'Anonymous'
-    def changedServices = env.CHANGED_SERVICES.join(', ')
+    def changedServices = env.CHANGED_SERVICES.replace(',', ', ')
     def environmentName = env.JOB_NAME.split('/')[0] ?: 'Unknown'
 
     slackSend(
