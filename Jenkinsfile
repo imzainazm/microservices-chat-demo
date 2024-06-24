@@ -88,7 +88,7 @@ pipeline {
                 }
             }
         }
-    }
+    
 
     stage('Fetch Committer Info') {
             steps {
@@ -99,7 +99,7 @@ pipeline {
                 }
             }
         }
-
+    }
     post {
         success {
             script {
