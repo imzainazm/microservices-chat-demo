@@ -1,16 +1,17 @@
 pipeline {
     agent any
+    
     environment {
         DOCKER_CREDENTIALS_ID = 'c1269293-12a7-4ae4-a1fe-b048736d5658'
         SLACK_CHANNEL = '#pipeline-notifications'
         SLACK_TOKEN_CREDENTIAL_ID = 'slack-token'
+        GIT_COMMIT = sh script: 'git rev-parse --verify HEAD', returnStdout: true
     }
 
     stages {
         stage('Checkout') {
             steps {
                 script {
-                    // Checkout your source code from your GitHub repository
                     def scmVars = checkout scm: [
                         $class: 'GitSCM',
                         branches: [[name: '*/develop']],
@@ -18,15 +19,24 @@ pipeline {
                         extensions: [],
                         userRemoteConfigs: [[url: 'https://github.com/imzainazm/microservices-chat-demo.git']]
                     ]
-                    currentBuild.description = "Triggered by: ${scmVars.GIT_AUTHOR_NAME}"
+                    def authorName = currentBuild.changeSets.first()?.items?.first()?.author?.fullName
+                    currentBuild.description = "Committed by: ${authorName}"
+                    echo "Committer Name: ${authorName}"
                 }
+            }
+        }
+        stage('Get Committer Name') {
+            steps {
+                script {
+                    def author = sh script: "git show -s --pretty=\"%an\" ${GIT_COMMIT}", returnStdout: true
+                    echo "Committer Name: ${author?.trim() ?: 'Author Name Not Available'}"
+                    }
             }
         }
 
         stage('Determine Changes') {
             steps {
                 script {
-                    // Determine which services have changed
                     def changedFiles = sh(
                         script: 'git diff --name-only HEAD~1 HEAD',
                         returnStdout: true
@@ -35,6 +45,7 @@ pipeline {
                     env.CHANGED_SERVICES = []
                     if (changedFiles.any { it.startsWith('api-gateway/') }) {
                         env.CHANGED_SERVICES += 'api-gateway'
+                        echo "Changed Services: ${env.CHANGED_SERVICES}"
                     }
                     if (changedFiles.any { it.startsWith('users-service/') }) {
                         env.CHANGED_SERVICES += 'users-service'
@@ -53,45 +64,21 @@ pipeline {
             when {
                 expression { env.CHANGED_SERVICES }
             }
-            parallel {
-                stage('Build API Gateway') {
-                    when {
-                        expression { env.CHANGED_SERVICES.contains('api-gateway') }
+            steps {
+                script {
+                    def shortCommitHash = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+                    
+                    if (env.CHANGED_SERVICES.contains('api-gateway')) {
+                        dockerBuild('imzainazm/api-gateway', shortCommitHash, './api-gateway')
                     }
-                    steps {
-                        script {
-                            sh 'docker build -t imzainazm/api-gateway:latest ./api-gateway'
-                        }
+                    if (env.CHANGED_SERVICES.contains('users-service')) {
+                        dockerBuild('imzainazm/users-service', shortCommitHash, './users-service')
                     }
-                }
-                stage('Build Users Service') {
-                    when {
-                        expression { env.CHANGED_SERVICES.contains('users-service') }
+                    if (env.CHANGED_SERVICES.contains('chat-service')) {
+                        dockerBuild('imzainazm/chat-service', shortCommitHash, './chat-service')
                     }
-                    steps {
-                        script {
-                            sh 'docker build -t imzainazm/users-service:latest ./users-service'
-                        }
-                    }
-                }
-                stage('Build Chat Service') {
-                    when {
-                        expression { env.CHANGED_SERVICES.contains('chat-service') }
-                    }
-                    steps {
-                        script {
-                            sh 'docker build -t imzainazm/chat-service:latest ./chat-service'
-                        }
-                    }
-                }
-                stage('Build Chat App') {
-                    when {
-                        expression { env.CHANGED_SERVICES.contains('chat-app') }
-                    }
-                    steps {
-                        script {
-                            sh 'docker build -t imzainazm/chat-app:latest ./chat-app'
-                        }
+                    if (env.CHANGED_SERVICES.contains('chat-app')) {
+                        dockerBuild('imzainazm/chat-app', shortCommitHash, './chat-app')
                     }
                 }
             }
@@ -101,81 +88,80 @@ pipeline {
             when {
                 expression { env.CHANGED_SERVICES }
             }
-            parallel {
-                stage('Push API Gateway') {
-                    when {
-                        expression { env.CHANGED_SERVICES.contains('api-gateway') }
-                    }
-                    steps {
-                        script {
-                            docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
-                                docker.image('imzainazm/api-gateway:latest').push()
-                            }
+            steps {
+                script {
+                    def shortCommitHash = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+                    
+                    parallel (
+                        "Push API Gateway": {
+                            dockerPush('imzainazm/api-gateway', shortCommitHash)
+                        },
+                        "Push Users Service": {
+                            dockerPush('imzainazm/users-service', shortCommitHash)
+                        },
+                        "Push Chat Service": {
+                            dockerPush('imzainazm/chat-service', shortCommitHash)
+                        },
+                        "Push Chat App": {
+                            dockerPush('imzainazm/chat-app', shortCommitHash)
                         }
-                    }
-                }
-                stage('Push Users Service') {
-                    when {
-                        expression { env.CHANGED_SERVICES.contains('users-service') }
-                    }
-                    steps {
-                        script {
-                            docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
-                                docker.image('imzainazm/users-service:latest').push()
-                            }
-                        }
-                    }
-                }
-                stage('Push Chat Service') {
-                    when {
-                        expression { env.CHANGED_SERVICES.contains('chat-service') }
-                    }
-                    steps {
-                        script {
-                            docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
-                                docker.image('imzainazm/chat-service:latest').push()
-                            }
-                        }
-                    }
-                }
-                stage('Push Chat App') {
-                    when {
-                        expression { env.CHANGED_SERVICES.contains('chat-app') }
-                    }
-                    steps {
-                        script {
-                            docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
-                                docker.image('imzainazm/chat-app:latest').push()
-                            }
-                        }
-                    }
+                    )
                 }
             }
         }
     }
 
+    stage('get_commit_details') {
+      steps {
+        script {
+          def authorName1 = currentBuild.changeSets.first()?.items?.first()?.author?.fullName
+          echo "Committer Name (redundant): ${authorName1}"
+        }
+      }
+    }
+
     post {
         success {
             script {
-                slackSend(
-                    botUser: true,
-                    channel: SLACK_CHANNEL,
-                    color: '#00ff00',
-                    message: "Pipeline Succeeded\nTriggered by: ${params.BUILD_CAUSE}\nUpdated Services: ${env.CHANGED_SERVICES.join(', ')}\nEnvironment: ${env.JOB_NAME}",
-                    tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
-                )
+                sendSlackNotification(true)
+                cleanupImages()
             }
         }
         failure {
             script {
-                slackSend(
-                    botUser: true,
-                    channel: SLACK_CHANNEL,
-                    color: '#ff0000',
-                    message: "Pipeline Failed\nTriggered by: ${params.BUILD_CAUSE}\nUpdated Services: ${env.CHANGED_SERVICES.join(', ')}\nEnvironment: ${env.JOB_NAME}",
-                    tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
-                )
+                sendSlackNotification(false)
+                cleanupImages()
             }
         }
     }
+}
+
+def dockerBuild(imageName, tag, dockerfilePath) {
+    sh "docker build -t ${imageName}:latest -t ${imageName}:${tag} ${dockerfilePath}"
+}
+
+def dockerPush(imageName, tag) {
+    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
+        docker.image("${imageName}:latest").push()
+        docker.image("${imageName}:${tag}").push()
+    }
+}
+
+def sendSlackNotification(isSuccess) {
+    def pipelineStatus = isSuccess ? "Succeeded" : "Failed"
+    def triggerUser = currentBuild.rawBuild.getCause(Cause.UserIdCause).userName ?: 'Anonymous'
+    def changedServices = env.CHANGED_SERVICES.join(', ')
+    def environmentName = env.JOB_NAME.split('/')[0] ?: 'Unknown'
+    
+    slackSend(
+        botUser: true,
+        channel: SLACK_CHANNEL,
+        color: isSuccess ? '#00ff00' : '#ff0000',
+        message: "Pipeline ${pipelineStatus}\n${currentBuild.description}\nChanged Services: ${env.changedServices}\nEnvironment: ${environmentName}\n",
+        tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
+    )
+}
+
+def cleanupImages() {
+    sh 'docker system prune -af'
 }
