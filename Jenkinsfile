@@ -131,7 +131,7 @@ def dockerBuild(imageName, tag, dockerfilePath) {
 def dockerPush(imageName, tag) {
     docker.withRegistry('https://index.docker.io/v1/', env.DOCKER_CREDENTIALS_ID) {
         docker.image("${imageName}:latest").push()
-        docker.image("${imageName}:${tag}`).push()
+        docker.image("${imageName}:${tag}").push()
     }
 }
 
