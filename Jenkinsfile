@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    
+
     environment {
         DOCKER_CREDENTIALS_ID = 'c1269293-12a7-4ae4-a1fe-b048736d5658'
         SLACK_CHANNEL = '#pipeline-notifications'
@@ -33,11 +33,10 @@ pipeline {
                         script: 'git diff --name-only HEAD~1 HEAD',
                         returnStdout: true
                     ).trim().split('\n')
-                    
+
                     env.CHANGED_SERVICES = []
                     if (changedFiles.any { it.startsWith('api-gateway/') }) {
                         env.CHANGED_SERVICES += 'api-gateway'
-                        echo "Changed Services: ${env.CHANGED_SERVICES}"
                     }
                     if (changedFiles.any { it.startsWith('users-service/') }) {
                         env.CHANGED_SERVICES += 'users-service'
@@ -48,29 +47,23 @@ pipeline {
                     if (changedFiles.any { it.startsWith('chat-app/') }) {
                         env.CHANGED_SERVICES += 'chat-app'
                     }
+
+                    echo "Changed Services: ${env.CHANGED_SERVICES.join(', ')}"
                 }
             }
         }
 
         stage('Build Docker Images') {
             when {
-                expression { env.CHANGED_SERVICES }
+                expression { return env.CHANGED_SERVICES }
             }
             steps {
                 script {
                     def shortCommitHash = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
-                    
-                    if (env.CHANGED_SERVICES.contains('api-gateway')) {
-                        dockerBuild('imzainazm/api-gateway', shortCommitHash, './api-gateway')
-                    }
-                    if (env.CHANGED_SERVICES.contains('users-service')) {
-                        dockerBuild('imzainazm/users-service', shortCommitHash, './users-service')
-                    }
-                    if (env.CHANGED_SERVICES.contains('chat-service')) {
-                        dockerBuild('imzainazm/chat-service', shortCommitHash, './chat-service')
-                    }
-                    if (env.CHANGED_SERVICES.contains('chat-app')) {
-                        dockerBuild('imzainazm/chat-app', shortCommitHash, './chat-app')
+                    def services = env.CHANGED_SERVICES.split(',')
+
+                    services.each { service ->
+                        dockerBuild("imzainazm/${service}", shortCommitHash, "./${service}")
                     }
                 }
             }
@@ -78,26 +71,18 @@ pipeline {
 
         stage('Push Docker Images to Docker Hub') {
             when {
-                expression { env.CHANGED_SERVICES }
+                expression { return env.CHANGED_SERVICES }
             }
             steps {
                 script {
                     def shortCommitHash = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
-                    
-                    parallel (
-                        "Push API Gateway": {
-                            dockerPush('imzainazm/api-gateway', shortCommitHash)
-                        },
-                        "Push Users Service": {
-                            dockerPush('imzainazm/users-service', shortCommitHash)
-                        },
-                        "Push Chat Service": {
-                            dockerPush('imzainazm/chat-service', shortCommitHash)
-                        },
-                        "Push Chat App": {
-                            dockerPush('imzainazm/chat-app', shortCommitHash)
-                        }
-                    )
+                    def services = env.CHANGED_SERVICES.split(',')
+
+                    parallel services.collectEntries { service ->
+                        ["Push ${service.capitalize()}": {
+                            dockerPush("imzainazm/${service}", shortCommitHash)
+                        }]
+                    }
                 }
             }
         }
@@ -144,7 +129,7 @@ def sendSlackNotification(isSuccess) {
     def triggerUser = currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)?.userName ?: 'Anonymous'
     def changedServices = env.CHANGED_SERVICES.join(', ')
     def environmentName = env.JOB_NAME.split('/')[0] ?: 'Unknown'
-    
+
     slackSend(
         botUser: true,
         channel: SLACK_CHANNEL,
