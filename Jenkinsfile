@@ -105,7 +105,7 @@ pipeline {
                 if (env.CHANGED_SERVICES) {
                     sendSlackNotification(true)
                 } else {
-                    echo "No services changed, skipping Slack notification."
+                    sendSlackNotificationNoChange(true)
                 }
                 cleanupImages()
             }
@@ -115,7 +115,7 @@ pipeline {
                 if (env.CHANGED_SERVICES) {
                     sendSlackNotification(false)
                 } else {
-                    echo "No services changed, skipping Slack notification."
+                    sendSlackNotificationNoChange(false)
                 }
                 cleanupImages()
             }
@@ -151,6 +151,20 @@ def sendSlackNotification(isSuccess) {
     } else {
         echo "No services changed, skipping Slack notification."
     }
+}
+
+def sendSlackNotificationNoChange(isSuccess) {
+    def pipelineStatus = isSuccess ? "Succeeded" : "Failed"
+    def triggerUser = currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)?.userName ?: 'Anonymous'
+    def environmentName = env.JOB_NAME.split('/')[0] ?: 'Unknown'
+
+    slackSend(
+        botUser: true,
+        channel: SLACK_CHANNEL,
+        color: isSuccess ? '#00ff00' : '#ff0000',
+        message: "Pipeline ${pipelineStatus}\nCommitted by: ${currentBuild.description}\nNo services changed\nEnvironment: ${environmentName}",
+        tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
+    )
 }
 
 def cleanupImages() {
