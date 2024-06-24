@@ -1,2 +1,2 @@
 This is a testfile for Jenkins pipeline.
-Update=5
+Update=6
