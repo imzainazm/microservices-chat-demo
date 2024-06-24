@@ -94,7 +94,13 @@ pipeline {
         stage('Get Committer Name') {
             steps {
                 script {
-                    echo "Committer Name: ${COMMITTER_NAME}"
+                    if (CHANGED_SERVICES) {
+                        echo "Committer Name: ${COMMITTER_NAME}"
+                    } else {
+                        // Retrieve the committer name again from the current build
+                        COMMITTER_NAME = currentBuild.changeSets?.last()?.items?.first()?.author?.fullName ?: "Unknown"
+                        echo "Committer Name: ${COMMITTER_NAME}"
+                    }
                 }
             }
         }
