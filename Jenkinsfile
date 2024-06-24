@@ -22,6 +22,14 @@ pipeline {
                 }
             }
         }
+        stage('Get Committer Name') {
+            steps {
+              script {
+                def author = sh script: "git show -s --pretty=\"%an\" ${GIT_COMMIT}", returnStdout: true
+                echo "Committer Name: ${author.trim()}"
+              }
+            }
+          }
 
         stage('Determine Changes') {
             steps {
@@ -148,7 +156,7 @@ def sendSlackNotification(isSuccess) {
         botUser: true,
         channel: SLACK_CHANNEL,
         color: isSuccess ? '#00ff00' : '#ff0000',
-        message: "Pipeline ${pipelineStatus}\nTriggered by: ${lastCommiterEmail}\nChanged Services: ${env.changedServices}\nEnvironment: ${environmentName}",
+        message: "Pipeline ${pipelineStatus}\nTriggered by: ${author.trim()}\nChanged Services: ${env.changedServices}\nEnvironment: ${environmentName}",
         tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
     )
 }
