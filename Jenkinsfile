@@ -5,7 +5,7 @@ pipeline {
         DOCKER_CREDENTIALS_ID = 'c1269293-12a7-4ae4-a1fe-b048736d5658'
         SLACK_CHANNEL = '#pipeline-notifications'
         SLACK_TOKEN_CREDENTIAL_ID = 'slack-token'
-        GIT_COMMIT = sh script: 'git rev-parse --verify HEAD', returnStdout: true
+        GIT_COMMIT = sh(script: 'git rev-parse --verify HEAD', returnStdout: true).trim()
     }
 
     stages {
@@ -19,18 +19,10 @@ pipeline {
                         extensions: [],
                         userRemoteConfigs: [[url: 'https://github.com/imzainazm/microservices-chat-demo.git']]
                     ]
-                    def authorName = currentBuild.changeSets.first()?.items?.first()?.author?.fullName
+                    def authorName = scmVars.GIT_COMMITTER_NAME
                     currentBuild.description = "Committed by: ${authorName}"
                     echo "Committer Name: ${authorName}"
                 }
-            }
-        }
-        stage('Get Committer Name') {
-            steps {
-                script {
-                    def author = sh script: "git show -s --pretty=\"%an\" ${GIT_COMMIT}", returnStdout: true
-                    echo "Committer Name: ${author?.trim() ?: 'Author Name Not Available'}"
-                    }
             }
         }
 
@@ -109,15 +101,15 @@ pipeline {
                 }
             }
         }
-    }
 
-    stage('get_commit_details') {
-      steps {
-        script {
-          def authorName1 = currentBuild.changeSets.first()?.items?.first()?.author?.fullName
-          echo "Committer Name (redundant): ${authorName1}"
+        stage('Get Committer Name') {
+            steps {
+                script {
+                    def authorName1 = currentBuild.changeSets.first()?.items?.first()?.author?.fullName
+                    echo "Committer Name (redundant): ${authorName1}"
+                }
+            }
         }
-      }
     }
 
     post {
@@ -149,7 +141,7 @@ def dockerPush(imageName, tag) {
 
 def sendSlackNotification(isSuccess) {
     def pipelineStatus = isSuccess ? "Succeeded" : "Failed"
-    def triggerUser = currentBuild.rawBuild.getCause(Cause.UserIdCause).userName ?: 'Anonymous'
+    def triggerUser = currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)?.userName ?: 'Anonymous'
     def changedServices = env.CHANGED_SERVICES.join(', ')
     def environmentName = env.JOB_NAME.split('/')[0] ?: 'Unknown'
     
@@ -157,11 +149,11 @@ def sendSlackNotification(isSuccess) {
         botUser: true,
         channel: SLACK_CHANNEL,
         color: isSuccess ? '#00ff00' : '#ff0000',
-        message: "Pipeline ${pipelineStatus}\n${currentBuild.description}\nChanged Services: ${env.changedServices}\nEnvironment: ${environmentName}\n",
+        message: "Pipeline ${pipelineStatus}\nCommitted by: ${currentBuild.description}\nChanged Services: ${changedServices}\nEnvironment: ${environmentName}",
         tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
     )
 }
 
 def cleanupImages() {
-    sh 'docker system prune -af'
+    sh 'docker image prune -af'
 }
