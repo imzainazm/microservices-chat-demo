@@ -5,6 +5,7 @@ pipeline {
         DOCKER_CREDENTIALS_ID = 'c1269293-12a7-4ae4-a1fe-b048736d5658'
         SLACK_CHANNEL = '#pipeline-notifications'
         SLACK_TOKEN_CREDENTIAL_ID = 'slack-token'
+        GIT_COMMIT = sh script: 'git rev-parse --verify HEAD', returnStdout: true
     }
 
     stages {
@@ -24,12 +25,12 @@ pipeline {
         }
         stage('Get Committer Name') {
             steps {
-              script {
-                def author = sh script: "git show -s --pretty=\"%an\" ${GIT_COMMIT}", returnStdout: true
-                echo "Committer Name: ${author.trim()}"
-              }
+                script {
+                  def authorName = sh script: "git show -s --pretty=\"%an\" ${env.GIT_COMMIT}", returnStdout: true
+                  echo "Committer Name: ${authorName.trim()}"
+                }
             }
-          }
+        }
 
         stage('Determine Changes') {
             steps {
