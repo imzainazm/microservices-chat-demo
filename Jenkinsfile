@@ -92,12 +92,14 @@ pipeline {
         stage('Get Committer Name') {
             steps {
                 script {
-                    def authorName1 = currentBuild.changeSets.first()?.items?.first()?.author?.fullName
-                    echo "Committer Name (redundant): ${authorName1}"
+                    def authorName = "Unknown"
+                    if (currentBuild.changeSets.size() > 0 && currentBuild.changeSets.first().items.size() > 0) {
+                        authorName = currentBuild.changeSets.first().items.first().author.fullName
+                    }
+                    echo "Committer Name: ${authorName}"
                 }
             }
-        }
-    }
+        }        
 
     post {
         success {
