@@ -7,6 +7,7 @@ pipeline {
         SLACK_TOKEN_CREDENTIAL_ID = 'slack-token'
         GIT_COMMIT = sh(script: 'git rev-parse --verify HEAD', returnStdout: true).trim()
         CHANGED_SERVICES = ''
+        COMMITTER_NAME = ''
     }
 
     stages {
@@ -20,9 +21,9 @@ pipeline {
                         extensions: [],
                         userRemoteConfigs: [[url: 'https://github.com/imzainazm/microservices-chat-demo.git']]
                     ]
-                    def authorName = scmVars.GIT_COMMITTER_NAME ?: "Unknown"
-                    currentBuild.description = "Committed by: ${authorName}"
-                    echo "Committer Name: ${authorName}"
+                    COMMITTER_NAME = scmVars.GIT_COMMITTER_NAME ?: "Unknown"
+                    currentBuild.description = "Committed by: ${COMMITTER_NAME}"
+                    echo "Committer Name: ${COMMITTER_NAME}"
                 }
             }
         }
@@ -93,11 +94,7 @@ pipeline {
         stage('Get Committer Name') {
             steps {
                 script {
-                    def authorName = "Unknown"
-                    if (currentBuild.changeSets?.size() > 0 && currentBuild.changeSets[0]?.items?.size() > 0) {
-                        authorName = currentBuild.changeSets[0].items[0].author.fullName
-                    }
-                    echo "Committer Name: ${authorName}"
+                    echo "Committer Name: ${COMMITTER_NAME}"
                 }
             }
         }
@@ -147,7 +144,7 @@ def sendSlackNotification(isSuccess) {
         botUser: true,
         channel: SLACK_CHANNEL,
         color: isSuccess ? '#00ff00' : '#ff0000',
-        message: "Pipeline ${pipelineStatus}\nCommitted by: ${currentBuild.description}\nChanged Services: ${changedServices}\nEnvironment: ${environmentName}",
+        message: "Pipeline ${pipelineStatus}\nCommitted by: ${COMMITTER_NAME}\nChanged Services: ${changedServices}\nEnvironment: ${environmentName}",
         tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
     )
 }
@@ -160,7 +157,7 @@ def sendSlackNotificationNoChange(isSuccess) {
         botUser: true,
         channel: SLACK_CHANNEL,
         color: isSuccess ? '#00ff00' : '#ff0000',
-        message: "Pipeline ${pipelineStatus}\nCommitted by: ${currentBuild.description}\nNo services changed\nEnvironment: ${environmentName}",
+        message: "Pipeline ${pipelineStatus}\nCommitted by: ${COMMITTER_NAME}\nNo services changed\nEnvironment: ${environmentName}",
         tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
     )
 }
