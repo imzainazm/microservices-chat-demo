@@ -11,6 +11,16 @@ pipeline {
     }
 
     stages {
+        stage('Fetch Committer Info') {
+            steps {
+                script {
+                    def commitInfo = sh(script: 'git log -1 --pretty=%an,%ae', returnStdout: true).trim().split(',')
+                    COMMITTER_NAME = commitInfo[0]?.trim() ?: 'Unknown'
+                    echo "Committer Name: ${COMMITTER_NAME}"
+                }
+            }
+        }
+
         stage('Checkout') {
             steps {
                 script {
@@ -21,19 +31,8 @@ pipeline {
                         extensions: [],
                         userRemoteConfigs: [[url: 'https://github.com/imzainazm/microservices-chat-demo.git']]
                     ]
-                    COMMITTER_NAME = scmVars.GIT_COMMITTER_NAME ?: "Unknown"
                     currentBuild.description = "Committed by: ${COMMITTER_NAME}"
                     echo "Committer Name: ${COMMITTER_NAME}"
-                }
-            }
-        }
-
-        stage('Fetch Committer Info') {
-            steps {
-                script {
-                    def commitInfo = sh(script: 'git log -1 --pretty=%an,%ae', returnStdout: true).trim().split(',')
-                    COMMITTER_NAME_1 = commitInfo[0]?.trim() ?: 'Unknown'
-                    echo "Committer Name: ${COMMITTER_NAME_1}"
                 }
             }
         }
@@ -104,7 +103,8 @@ pipeline {
         stage('Get Committer Name') {
             steps {
                 script {
-                    COMMITTER_NAME = env.GIT_COMMITTER_NAME ?: env.GIT_AUTHOR_NAME ?: 'Unknown'
+                    def commitInfo = sh(script: 'git log -1 --pretty=%an,%ae', returnStdout: true).trim().split(',')
+                    COMMITTER_NAME = commitInfo[0]?.trim() ?: 'Unknown'
                     echo "Committer Name: ${COMMITTER_NAME}"
                 }
             }
@@ -168,7 +168,7 @@ def sendSlackNotificationNoChange(isSuccess) {
         botUser: true,
         channel: SLACK_CHANNEL,
         color: isSuccess ? '#00ff00' : '#ff0000',
-        message: "Pipeline ${pipelineStatus}\nCommitted by: ${COMMITTER_NAME_1}\nNo services changed\nEnvironment: ${environmentName}",
+        message: "Pipeline ${pipelineStatus}\nCommitted by: ${COMMITTER_NAME}\nNo services changed\nEnvironment: ${environmentName}",
         tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
     )
 }
