@@ -6,7 +6,7 @@ pipeline {
         SLACK_CHANNEL = '#pipeline-notifications'
         SLACK_TOKEN_CREDENTIAL_ID = 'slack-token'
         GIT_COMMIT = sh(script: 'git rev-parse --verify HEAD', returnStdout: true).trim()
-        CHANGED_SERVICES = ""
+        CHANGED_SERVICES = ''
     }
 
     stages {
@@ -20,7 +20,7 @@ pipeline {
                         extensions: [],
                         userRemoteConfigs: [[url: 'https://github.com/imzainazm/microservices-chat-demo.git']]
                     ]
-                    def authorName = scmVars.GIT_COMMITTER_NAME
+                    def authorName = scmVars.GIT_COMMITTER_NAME ?: "Unknown"
                     currentBuild.description = "Committed by: ${authorName}"
                     echo "Committer Name: ${authorName}"
                 }
@@ -36,6 +36,7 @@ pipeline {
                     ).trim().split('\n')
 
                     def changedServices = []
+
                     if (changedFiles.any { it.startsWith('api-gateway/') }) {
                         changedServices.add('api-gateway')
                     }
@@ -49,20 +50,20 @@ pipeline {
                         changedServices.add('chat-app')
                     }
 
-                    env.CHANGED_SERVICES = changedServices.join(',')
-                    echo "Changed Services: ${env.CHANGED_SERVICES}"
+                    CHANGED_SERVICES = changedServices.join(',')
+                    echo "Changed Services: ${CHANGED_SERVICES}"
                 }
             }
         }
 
         stage('Build Docker Images') {
             when {
-                expression { return env.CHANGED_SERVICES }
+                expression { return CHANGED_SERVICES != '' }
             }
             steps {
                 script {
                     def shortCommitHash = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
-                    def services = env.CHANGED_SERVICES.split(',')
+                    def services = CHANGED_SERVICES.split(',')
 
                     services.each { service ->
                         dockerBuild("imzainazm/${service}", shortCommitHash, "./${service}")
@@ -73,12 +74,12 @@ pipeline {
 
         stage('Push Docker Images to Docker Hub') {
             when {
-                expression { return env.CHANGED_SERVICES }
+                expression { return CHANGED_SERVICES != '' }
             }
             steps {
                 script {
                     def shortCommitHash = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
-                    def services = env.CHANGED_SERVICES.split(',')
+                    def services = CHANGED_SERVICES.split(',')
 
                     parallel services.collectEntries { service ->
                         ["Push ${service.capitalize()}": {
@@ -93,18 +94,19 @@ pipeline {
             steps {
                 script {
                     def authorName = "Unknown"
-                    if (currentBuild.changeSets.size() > 0 && currentBuild.changeSets.first().items.size() > 0) {
-                        authorName = currentBuild.changeSets.first().items.first().author.fullName
+                    if (currentBuild.changeSets?.size() > 0 && currentBuild.changeSets[0]?.items?.size() > 0) {
+                        authorName = currentBuild.changeSets[0].items[0].author.fullName
                     }
                     echo "Committer Name: ${authorName}"
                 }
             }
-        }        
+        }
+    }
 
     post {
         success {
             script {
-                if (env.CHANGED_SERVICES) {
+                if (CHANGED_SERVICES) {
                     sendSlackNotification(true)
                 } else {
                     sendSlackNotificationNoChange(true)
@@ -114,7 +116,7 @@ pipeline {
         }
         failure {
             script {
-                if (env.CHANGED_SERVICES) {
+                if (CHANGED_SERVICES) {
                     sendSlackNotification(false)
                 } else {
                     sendSlackNotificationNoChange(false)
@@ -137,27 +139,21 @@ def dockerPush(imageName, tag) {
 }
 
 def sendSlackNotification(isSuccess) {
-    if (env.CHANGED_SERVICES) {
-        def pipelineStatus = isSuccess ? "Succeeded" : "Failed"
-        def triggerUser = currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)?.userName ?: 'Anonymous'
-        def changedServices = env.CHANGED_SERVICES.replace(',', ', ')
-        def environmentName = env.JOB_NAME.split('/')[0] ?: 'Unknown'
+    def pipelineStatus = isSuccess ? "Succeeded" : "Failed"
+    def changedServices = CHANGED_SERVICES.replaceAll(',', ', ')
+    def environmentName = env.JOB_NAME.split('/')[0] ?: 'Unknown'
 
-        slackSend(
-            botUser: true,
-            channel: SLACK_CHANNEL,
-            color: isSuccess ? '#00ff00' : '#ff0000',
-            message: "Pipeline ${pipelineStatus}\nCommitted by: ${currentBuild.description}\nChanged Services: ${changedServices}\nEnvironment: ${environmentName}",
-            tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
-        )
-    } else {
-        echo "No services changed, skipping Slack notification."
-    }
+    slackSend(
+        botUser: true,
+        channel: SLACK_CHANNEL,
+        color: isSuccess ? '#00ff00' : '#ff0000',
+        message: "Pipeline ${pipelineStatus}\nCommitted by: ${currentBuild.description}\nChanged Services: ${changedServices}\nEnvironment: ${environmentName}",
+        tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
+    )
 }
 
 def sendSlackNotificationNoChange(isSuccess) {
     def pipelineStatus = isSuccess ? "Succeeded" : "Failed"
-    def triggerUser = currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)?.userName ?: 'Anonymous'
     def environmentName = env.JOB_NAME.split('/')[0] ?: 'Unknown'
 
     slackSend(
@@ -171,5 +167,4 @@ def sendSlackNotificationNoChange(isSuccess) {
 
 def cleanupImages() {
     sh 'docker image prune -af'
-}
 }
