@@ -10,16 +10,6 @@ pipeline {
     }
 
     stages {
-        stage('Fetch Committer Info') {
-            steps {
-                script {
-                    def commitInfo = sh(script: 'git log -1 --pretty=%an,%ae', returnStdout: true).trim().split(',')
-                    COMMITTER_NAME = commitInfo[0]?.trim() ?: 'Unknown'
-                    echo "Committer Name: ${COMMITTER_NAME}"
-                }
-            }
-        }
-
         stage('Checkout') {
             steps {
                 script {
