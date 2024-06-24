@@ -28,6 +28,16 @@ pipeline {
             }
         }
 
+        stage('Fetch Committer Info') {
+            steps {
+                script {
+                    def commitInfo = sh(script: 'git log -1 --pretty=%an,%ae', returnStdout: true).trim().split(',')
+                    COMMITTER_NAME_1 = commitInfo[0]?.trim() ?: 'Unknown'
+                    echo "Committer Name: ${COMMITTER_NAME_1}"
+                }
+            }
+        }
+
         stage('Determine Changes') {
             steps {
                 script {
@@ -158,7 +168,7 @@ def sendSlackNotificationNoChange(isSuccess) {
         botUser: true,
         channel: SLACK_CHANNEL,
         color: isSuccess ? '#00ff00' : '#ff0000',
-        message: "Pipeline ${pipelineStatus}\nCommitted by: ${COMMITTER_NAME}\nNo services changed\nEnvironment: ${environmentName}",
+        message: "Pipeline ${pipelineStatus}\nCommitted by: ${COMMITTER_NAME_1}\nNo services changed\nEnvironment: ${environmentName}",
         tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
     )
 }
