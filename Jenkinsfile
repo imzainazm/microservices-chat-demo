@@ -172,3 +172,4 @@ def sendSlackNotificationNoChange(isSuccess) {
 def cleanupImages() {
     sh 'docker image prune -af'
 }
+}
