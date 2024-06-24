@@ -19,7 +19,9 @@ pipeline {
                         extensions: [],
                         userRemoteConfigs: [[url: 'https://github.com/imzainazm/microservices-chat-demo.git']]
                     ]
-                    currentBuild.description = "Triggered by: ${scmVars.GIT_AUTHOR_NAME}"
+                    def authorName = currentBuild.changeSets.first()?.items?.first()?.author?.fullName
+                    currentBuild.description = "Triggered by: ${authorName}"
+                    echo "Committer Name: ${authorName}"
                 }
             }
         }
@@ -110,12 +112,13 @@ pipeline {
     }
 
     stage('get_commit_details') {
-        steps {
-            script {
-                def authorName = currentBuild.changeSets.first()?.items?.first()?.author?.fullName
-                echo "Committer Name: ${authorName}"
-            }
+      steps {
+        script {
+          def authorName1 = currentBuild.changeSets.first()?.items?.first()?.author?.fullName
+          echo "Committer Name (redundant): ${authorName1}"
         }
+      }
+    }
 
     post {
         success {
@@ -154,7 +157,7 @@ def sendSlackNotification(isSuccess) {
         botUser: true,
         channel: SLACK_CHANNEL,
         color: isSuccess ? '#00ff00' : '#ff0000',
-        message: "Pipeline ${pipelineStatus}\nCommitter Name: ${author?.trim() ?: 'Author Name Not Available'}\nChanged Services: ${env.changedServices}\nEnvironment: ${environmentName}\nAuthor Name: ${env.authorName}",
+        message: "Pipeline ${pipelineStatus}\nCommitter Name: ${authorName}\nChanged Services: ${env.changedServices}\nEnvironment: ${environmentName}\n",
         tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
     )
 }
