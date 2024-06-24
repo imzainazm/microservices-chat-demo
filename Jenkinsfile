@@ -102,7 +102,8 @@ pipeline {
         stage('Get Committer Name') {
             steps {
                 script {
-                    COMMITTER_NAME = env.GIT_COMMITTER_NAME ?: env.GIT_AUTHOR_NAME ?: 'Unknown'
+                    def commitInfo = sh(script: 'git log -1 --pretty=%an,%ae', returnStdout: true).trim().split(',')
+                    COMMITTER_NAME = commitInfo[0]?.trim() ?: 'Unknown'
                     echo "Committer Name: ${COMMITTER_NAME}"
                 }
             }
