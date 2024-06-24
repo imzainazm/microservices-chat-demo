@@ -102,13 +102,21 @@ pipeline {
     post {
         success {
             script {
-                sendSlackNotification(true)
+                if (env.CHANGED_SERVICES) {
+                    sendSlackNotification(true)
+                } else {
+                    echo "No services changed, skipping Slack notification."
+                }
                 cleanupImages()
             }
         }
         failure {
             script {
-                sendSlackNotification(false)
+                if (env.CHANGED_SERVICES) {
+                    sendSlackNotification(false)
+                } else {
+                    echo "No services changed, skipping Slack notification."
+                }
                 cleanupImages()
             }
         }
@@ -127,18 +135,22 @@ def dockerPush(imageName, tag) {
 }
 
 def sendSlackNotification(isSuccess) {
-    def pipelineStatus = isSuccess ? "Succeeded" : "Failed"
-    def triggerUser = currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)?.userName ?: 'Anonymous'
-    def changedServices = env.CHANGED_SERVICES.replace(',', ', ')
-    def environmentName = env.JOB_NAME.split('/')[0] ?: 'Unknown'
+    if (env.CHANGED_SERVICES) {
+        def pipelineStatus = isSuccess ? "Succeeded" : "Failed"
+        def triggerUser = currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)?.userName ?: 'Anonymous'
+        def changedServices = env.CHANGED_SERVICES.replace(',', ', ')
+        def environmentName = env.JOB_NAME.split('/')[0] ?: 'Unknown'
 
-    slackSend(
-        botUser: true,
-        channel: SLACK_CHANNEL,
-        color: isSuccess ? '#00ff00' : '#ff0000',
-        message: "Pipeline ${pipelineStatus}\nCommitted by: ${currentBuild.description}\nChanged Services: ${changedServices}\nEnvironment: ${environmentName}",
-        tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
-    )
+        slackSend(
+            botUser: true,
+            channel: SLACK_CHANNEL,
+            color: isSuccess ? '#00ff00' : '#ff0000',
+            message: "Pipeline ${pipelineStatus}\nCommitted by: ${currentBuild.description}\nChanged Services: ${changedServices}\nEnvironment: ${environmentName}",
+            tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
+        )
+    } else {
+        echo "No services changed, skipping Slack notification."
+    }
 }
 
 def cleanupImages() {
