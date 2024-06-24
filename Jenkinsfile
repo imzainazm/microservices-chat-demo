@@ -20,7 +20,7 @@ pipeline {
                         userRemoteConfigs: [[url: 'https://github.com/imzainazm/microservices-chat-demo.git']]
                     ]
                     def authorName = currentBuild.changeSets.first()?.items?.first()?.author?.fullName
-                    currentBuild.description = "Triggered by: ${authorName}"
+                    currentBuild.description = "Committed by: ${authorName}"
                     echo "Committer Name: ${authorName}"
                 }
             }
