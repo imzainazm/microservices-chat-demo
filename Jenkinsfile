@@ -26,9 +26,9 @@ pipeline {
         stage('Get Committer Name') {
             steps {
                 script {
-                  def authorName = sh script: "git show -s --pretty=\"%an\" ${env.GIT_COMMIT}", returnStdout: true
-                  echo "Committer Name: ${authorName.trim()}"
-                }
+                    def author = sh script: "git show -s --pretty=\"%an\" ${GIT_COMMIT}", returnStdout: true
+                    echo "Committer Name: ${author?.trim() ?: 'Author Name Not Available'}"
+                    }
             }
         }
 
@@ -112,9 +112,8 @@ pipeline {
     stage('get_commit_details') {
         steps {
             script {
-                env.GIT_COMMIT_MSG = sh (script: 'git log -1 --pretty=%B ${GIT_COMMIT}', returnStdout: true).trim()
-                env.GIT_AUTHOR = sh (script: 'git log -1 --pretty=%cn ${GIT_COMMIT}', returnStdout: true).trim()
-                }
+                def authorName = currentBuild.changeSets.first()?.items?.first()?.author?.fullName
+                echo "Committer Name: ${authorName}"
             }
         }
 
@@ -133,8 +132,6 @@ pipeline {
         }
     }
 }
-
-def lastCommiterEmail = sh(returnStdout: true, script: 'git log --format="%ae" | head -1').trim()
 
 def dockerBuild(imageName, tag, dockerfilePath) {
     sh "docker build -t ${imageName}:latest -t ${imageName}:${tag} ${dockerfilePath}"
@@ -157,7 +154,7 @@ def sendSlackNotification(isSuccess) {
         botUser: true,
         channel: SLACK_CHANNEL,
         color: isSuccess ? '#00ff00' : '#ff0000',
-        message: "Pipeline ${pipelineStatus}\nTriggered by: ${authorName.trim()}\nChanged Services: ${env.changedServices}\nEnvironment: ${environmentName}",
+        message: "Pipeline ${pipelineStatus}\nCommitter Name: ${author?.trim() ?: 'Author Name Not Available'}\nChanged Services: ${env.changedServices}\nEnvironment: ${environmentName}\nAuthor Name: ${env.authorName}",
         tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
     )
 }
