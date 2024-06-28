@@ -32,7 +32,14 @@ spec:
               key: MYSQL_DATABASE
         volumeMounts:
         - name: mysql-storage
-          mountPath: /var/lib/postgresql/data
+          mountPath: /var/lib/mysql
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "300Mi"
+            cpu: "250m"
   volumeClaimTemplates:
   - metadata:
       name: mysql-storage
