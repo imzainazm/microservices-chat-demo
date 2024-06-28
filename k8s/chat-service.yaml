@@ -15,6 +15,13 @@ spec:
     spec:
       containers:
       - name: chat-service
-        image: imzainazm/chat-service:latest
+        image: imzainazm/chat-service
         ports:
         - containerPort: 7100
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "300Mi"
+            cpu: "250m"
