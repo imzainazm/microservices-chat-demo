@@ -15,6 +15,13 @@ spec:
     spec:
       containers:
       - name: api-gateway
-        image: imzainazm/api-gateway:latest
+        image: imzainazm/api-gateway
         ports:
         - containerPort: 7000
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "300Mi"
+            cpu: "250m"
