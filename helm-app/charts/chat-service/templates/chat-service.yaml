@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.chatService.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.chatService.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.chatService.selector.app }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.chatService.selector.app }}
+        {{- range $key, $value := .Values.chatService.labels }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
+    spec:
+      containers:
+      - name: {{ .Values.chatService.containerName }}
+        image: {{ .Values.chatService.image.repository }}:{{ .Values.chatService.image.tag }}
+        ports:
+        - containerPort: {{ .Values.chatService.containerPort }}

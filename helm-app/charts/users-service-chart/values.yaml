@@ -1,0 +1,23 @@
+usersService:
+  deployment:
+    name: users-service
+    namespace: my-app-namespace-3
+    replicas: 1
+    selector:
+      app: users-service
+    containerName: users-service
+    image:
+      repository: imzainazm/users-service
+      tag: latest
+    containerPort: 7101
+  labels:
+    environment: staging
+  service:
+    name: users-service
+    namespace: my-app-namespace-3
+    selector:
+      app: users-service
+    ports:
+      port: 7101
+      targetPort: 7101
+    type: ClusterIP

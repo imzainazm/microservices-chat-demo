@@ -1,0 +1,20 @@
+namespace: my-app-namespace-3
+
+chatService:
+  name: chat-service
+  namespace: my-app-namespace-3
+  replicas: 1
+  selector:
+    app: chat-service
+  containerName: chat-service
+  image:
+    repository: imzainazm/chat-service
+    tag: latest
+  containerPort: 7100
+  labels:
+    environment: staging
+  service:
+    name: chat-service
+    type: ClusterIP
+    port: 7100
+    targetPort: 7100

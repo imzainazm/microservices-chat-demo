@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.phpmyadmin.name }}
+  namespace: {{ .Values.phpmyadmin.namespace }}
+spec:
+  replicas: {{ .Values.phpmyadmin.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.phpmyadmin.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.phpmyadmin.name }}
+        {{- range $key, $value := .Values.phpmyadmin.labels }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
+    spec:
+      containers:
+      - name: {{ .Values.phpmyadmin.containerName }}
+        image: {{ .Values.phpmyadmin.image.repository }}:{{ .Values.phpmyadmin.image.tag }}
+        ports:
+        - containerPort: {{ .Values.phpmyadmin.containerPort }}
+        volumeMounts:
+        - name: config-volume
+          mountPath: {{ .Values.phpmyadmin.volumeMounts.mountPath }}
+          subPath: {{ .Values.phpmyadmin.volumeMounts.subPath }}
+      volumes:
+      - name: config-volume
+        configMap:
+          name: {{ .Values.phpmyadmin.volumes.configMap.name }}
+          items:
+            - key: {{ .Values.phpmyadmin.volumes.configMap.items.key }}
+              path: {{ .Values.phpmyadmin.volumes.configMap.items.path }}

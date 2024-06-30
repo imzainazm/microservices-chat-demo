@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.chatServiceDb.name }}
+  namespace: {{ .Values.chatServiceDb.namespace }}
+spec:
+  serviceName: "{{ .Values.chatServiceDb.service.name }}"
+  replicas: {{ .Values.chatServiceDb.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.chatServiceDb.selector.app }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.chatServiceDb.selector.app }}
+        {{- range $key, $value := .Values.chatServiceDb.labels }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
+    spec:   
+      containers:
+      - name: {{ .Values.chatServiceDb.containerName }}
+        image: {{ .Values.chatServiceDb.image.repository }}:{{ .Values.chatServiceDb.image.tag }}
+        ports:
+        - containerPort: {{ .Values.chatServiceDb.containerPort }}
+        env:
+          {{- range .Values.chatServiceDb.env }}
+          - name: {{ .name }}
+            value: {{ .value }}
+          {{- end }}
+        volumeMounts:
+        - name: {{ .Values.chatServiceDb.volumeMounts.name }}
+          mountPath: {{ .Values.chatServiceDb.volumeMounts.mountPath }}
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ .Values.chatServiceDb.volumeClaimTemplates.name }}
+    spec:
+      accessModes: [ "{{ .Values.chatServiceDb.volumeClaimTemplates.accessModes }}" ]
+      resources:
+        requests:
+          storage: {{ .Values.chatServiceDb.volumeClaimTemplates.storage }}
