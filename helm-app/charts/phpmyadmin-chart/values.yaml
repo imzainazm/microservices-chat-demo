@@ -27,3 +27,10 @@ phpmyadmin:
   env:
     mysqlRootPasswordSecretName: db-secret
     mysqlRootPasswordSecretKey: MYSQL_ROOT_PASSWORD
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "300Mi"
+      cpu: "250m"
