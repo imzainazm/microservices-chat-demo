@@ -30,6 +30,13 @@ spec:
         volumeMounts:
         - name: {{ .Values.chatServiceDb.volumeMounts.name }}
           mountPath: {{ .Values.chatServiceDb.volumeMounts.mountPath }}
+        resources:
+          requests:
+            memory: {{ .Values.chatServiceDb.resources.requests.memory }}
+            cpu: {{ .Values.chatServiceDb.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.chatServiceDb.resources.limits.memory }}
+            cpu: {{ .Values.chatServiceDb.resources.limits.cpu }}
   volumeClaimTemplates:
   - metadata:
       name: {{ .Values.chatServiceDb.volumeClaimTemplates.name }}
