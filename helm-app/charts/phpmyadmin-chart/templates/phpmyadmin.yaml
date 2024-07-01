@@ -25,6 +25,13 @@ spec:
         - name: config-volume
           mountPath: {{ .Values.phpmyadmin.volumeMounts.mountPath }}
           subPath: {{ .Values.phpmyadmin.volumeMounts.subPath }}
+        resources:
+          requests:
+            memory: {{ .Values.phpmyadmin.resources.requests.memory }}
+            cpu: {{ .Values.phpmyadmin.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.phpmyadmin.resources.limits.memory }}
+            cpu: {{ .Values.phpmyadmin.resources.limits.cpu }}
       volumes:
       - name: config-volume
         configMap:
