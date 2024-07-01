@@ -21,3 +21,10 @@ spec:
         image: {{ .Values.apiGateway.image.repository }}:{{ .Values.apiGateway.image.tag }}
         ports:
         - containerPort: {{ .Values.apiGateway.containerPort }}
+        resources:
+          requests:
+            memory: {{ .Values.apiGateway.resources.requests.memory }}
+            cpu: {{ .Values.apiGateway.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.apiGateway.resources.limits.memory }}
+            cpu: {{ .Values.apiGateway.resources.limits.cpu }}
