@@ -21,3 +21,10 @@ spec:
         image: {{ .Values.usersService.deployment.image.repository }}:{{ .Values.usersService.deployment.image.tag }}
         ports:
         - containerPort: {{ .Values.usersService.deployment.containerPort }}
+        resources:
+          requests:
+            memory: {{ .Values.usersService.resources.requests.memory }}
+            cpu: {{ .Values.usersService.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.usersService.resources.limits.memory }}
+            cpu: {{ .Values.usersService.resources.limits.cpu }}
