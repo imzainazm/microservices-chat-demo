@@ -21,3 +21,10 @@ spec:
         image: {{ .Values.chatService.image.repository }}:{{ .Values.chatService.image.tag }}
         ports:
         - containerPort: {{ .Values.chatService.containerPort }}
+        resources:
+          requests:
+            memory: {{ .Values.chatService.resources.requests.memory }}
+            cpu: {{ .Values.chatService.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.chatService.resources.limits.memory }}
+            cpu: {{ .Values.chatService.resources.limits.cpu }}
