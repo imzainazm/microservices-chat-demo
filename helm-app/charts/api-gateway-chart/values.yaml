@@ -15,3 +15,10 @@ apiGateway:
     port: 7000
     targetPort: 7000
     nodePort: 32000
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "300Mi"
+      cpu: "250m"
