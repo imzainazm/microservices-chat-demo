@@ -36,6 +36,13 @@ spec:
         volumeMounts:
         - name: mysql-storage
           mountPath: {{ .Values.usersServiceDb.volumeMounts.mountPath }}
+        resources:
+          requests:
+            memory: {{ .Values.usersServiceDb.resources.requests.memory }}
+            cpu: {{ .Values.usersServiceDb.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.usersServiceDb.resources.limits.memory }}
+            cpu: {{ .Values.usersServiceDb.resources.limits.cpu }}
   volumeClaimTemplates:
   - metadata:
       name: mysql-storage
