@@ -47,7 +47,7 @@ spec:
   - metadata:
       name: mysql-storage
     spec:
-      accessModes: [ "{{ .Values.usersServiceDb.volumeClaim.accessMode }}" ]
+      accessModes: [ "{{ .Values.usersServiceDb.volumeClaim.accessMode | default "ReadWriteOnce "}}" ]
       resources:
         requests:
           storage: {{ .Values.usersServiceDb.volumeClaim.storage }}
