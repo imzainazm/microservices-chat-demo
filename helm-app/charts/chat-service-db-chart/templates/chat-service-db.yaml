@@ -41,7 +41,7 @@ spec:
   - metadata:
       name: {{ .Values.chatServiceDb.volumeClaimTemplates.name }}
     spec:
-      accessModes: [ "{{ .Values.chatServiceDb.volumeClaimTemplates.accessModes }}" ]
+      accessModes: [ "{{ .Values.chatServiceDb.volumeClaimTemplates.accessModes | default "ReadWriteOnce" }}" ]
       resources:
         requests:
           storage: {{ .Values.chatServiceDb.volumeClaimTemplates.storage }}
