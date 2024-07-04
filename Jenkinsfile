@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    parameters {
+        string(name: 'BRANCH_NAME', defaultValue: 'develop', description: 'Branch to build')
+    }
+
     environment {
         DOCKER_CREDENTIALS_ID = 'c1269293-12a7-4ae4-a1fe-b048736d5658'
         SLACK_CHANNEL = '#pipeline-notifications'
@@ -25,7 +29,7 @@ pipeline {
                 script {
                     def scmVars = checkout scm: [
                         $class: 'GitSCM',
-                        branches: [[name: '*/develop']],
+                        branches: [[name: "*/${params.BRANCH_NAME}"]],
                         doGenerateSubmoduleConfigurations: false,
                         extensions: [],
                         userRemoteConfigs: [[url: 'https://github.com/imzainazm/microservices-chat-demo.git']]
