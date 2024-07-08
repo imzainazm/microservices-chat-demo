@@ -4,4 +4,4 @@ metadata:
   name: app-config
   namespace: my-app-namespace
 data:
-  API_GATEWAY_URI: "http://172.29.25.105:32000"
+  API_GATEWAY_URI: "api-gateway-service:7000"
