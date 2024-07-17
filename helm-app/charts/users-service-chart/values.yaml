@@ -1,7 +1,6 @@
 usersService:
   deployment:
     name: users-service
-    namespace: chat-app
     replicas: 1
     selector:
       app: users-service

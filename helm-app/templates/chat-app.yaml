@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.chatApp.name }}
-  namespace: {{ .Values.chatApp.namespace }}
 spec:
   replicas: {{ .Values.chatApp.replicas }}
   selector:

@@ -1,6 +1,5 @@
 apiGateway:
   name: api-gateway
-  namespace: chat-app
   replicas: 1
   containerName: api-gateway
   image:

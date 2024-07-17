@@ -1,6 +1,5 @@
 chatApp:
   name: chat-app
-  namespace: chat-app
   replicas: 1
   containerName: chat-app
   image:
@@ -20,8 +19,6 @@ chatApp:
     key: API_GATEWAY_URI
     apiGatewayUri: "api-gateway-service:7000"
 
-
-namespace: chat-app
 
 secret: 
   name: db-secret

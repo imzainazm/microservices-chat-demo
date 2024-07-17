@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.phpmyadmin.name }}
-  namespace: {{ .Values.phpmyadmin.namespace }}
 spec:
   replicas: {{ .Values.phpmyadmin.replicas }}
   selector:

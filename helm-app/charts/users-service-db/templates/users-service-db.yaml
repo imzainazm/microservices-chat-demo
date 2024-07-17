@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ .Values.usersServiceDb.statefulsetName }}
-  namespace: {{ .Values.namespace }}
 spec:
   serviceName: "{{ .Values.usersServiceDb.service.name }}"
   replicas: {{ .Values.usersServiceDb.replicaCount }}

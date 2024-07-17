@@ -1,6 +1,5 @@
 phpmyadmin:
   name: phpmyadmin
-  namespace: chat-app
   replicas: 1
   containerName: phpmyadmin
   image:
