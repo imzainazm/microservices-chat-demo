@@ -44,3 +44,4 @@ spec:
       resources:
         requests:
           storage: {{ .Values.chatServiceDb.volumeClaimTemplates.storage }}
+      storageClassName: {{ .Values.chatServiceDb.volumeClaimTemplates.storageClassName | default "default" }}

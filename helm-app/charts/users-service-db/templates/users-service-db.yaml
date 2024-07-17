@@ -50,3 +50,4 @@ spec:
       resources:
         requests:
           storage: {{ .Values.usersServiceDb.volumeClaim.storage }}
+      storageClassName: {{ .Values.usersServiceDb.volumeClaim.storageClassName | default "default" }}
