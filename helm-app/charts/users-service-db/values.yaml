@@ -39,5 +39,5 @@ service:
   type: ClusterIP
 
 secret: 
-  name: my-secret
+  name: db-secret
   type: Opaque

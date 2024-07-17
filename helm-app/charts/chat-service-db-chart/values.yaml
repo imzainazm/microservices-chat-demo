@@ -17,12 +17,12 @@ chatServiceDb:
     - name: MYSQL_ROOT_PASSWORD
       valueFrom:
         secretKeyRef:
-          name: my-secret
+          name: db-secret
           key: MYSQL_ROOT_PASSWORD
     - name: MYSQL_DATABASE
       valueFrom:
         secretKeyRef:
-          name: my-secret
+          name: db-secret
           key: MYSQL_DATABASE
   volumeMounts:
     name: mysql-storage
