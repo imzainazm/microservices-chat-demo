@@ -1,8 +1,8 @@
-namespace: my-app-namespace-3
+namespace: chat-app
 
 chatServiceDb:
   name: chat-service-db
-  namespace: my-app-namespace-3
+  namespace: chat-app
   replicas: 1
   selector:
     app: chat-service-db

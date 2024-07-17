@@ -1,3 +1,4 @@
+namespace: chat-app
 usersServiceDb:
   statefulsetName: users-service-db
   replicaCount: 1
