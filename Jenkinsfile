@@ -19,7 +19,7 @@ pipeline {
                 script {
                     def commitInfo = sh(script: 'git log -1 --pretty=%an,%ae', returnStdout: true).trim().split(',')
                     COMMITTER_NAME = commitInfo[0]?.trim() ?: 'Unknown'
-                    echo "Committer Name: ${COMMITTER_NAME}"
+                    echo "Triggered By: ${COMMITTER_NAME}"
                 }
             }
         }
@@ -34,8 +34,8 @@ pipeline {
                         extensions: [],
                         userRemoteConfigs: [[url: 'https://github.com/imzainazm/microservices-chat-demo.git']]
                     ]
-                    currentBuild.description = "Committed by: ${COMMITTER_NAME}"
-                    echo "Committer Name: ${COMMITTER_NAME}"
+                    currentBuild.description = "Triggered by: ${COMMITTER_NAME}"
+                    echo "Triggered by: ${COMMITTER_NAME}"
                 }
             }
         }
@@ -148,7 +148,7 @@ def sendSlackNotification(isSuccess) {
         botUser: true,
         channel: SLACK_CHANNEL,
         color: isSuccess ? '#00ff00' : '#ff0000',
-        message: "Pipeline ${pipelineStatus}\nCommitted by: ${COMMITTER_NAME}\nChanged Services: ${changedServices}\nEnvironment: ${environmentName}",
+        message: "Pipeline ${pipelineStatus}\nTriggered by: ${COMMITTER_NAME}\nChanged Services: ${changedServices}\nEnvironment: ${environmentName}",
         tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
     )
 }
@@ -161,7 +161,7 @@ def sendSlackNotificationNoChange(isSuccess) {
         botUser: true,
         channel: SLACK_CHANNEL,
         color: isSuccess ? '#00ff00' : '#ff0000',
-        message: "Pipeline ${pipelineStatus}\nCommitted by: ${COMMITTER_NAME}\nNo services changed\nEnvironment: ${environmentName}",
+        message: "Pipeline ${pipelineStatus}\nTriggered by: ${COMMITTER_NAME}\nNo services changed\nEnvironment: ${environmentName}",
         tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
     )
 }
