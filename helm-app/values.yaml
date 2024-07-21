@@ -1,25 +1,3 @@
-chatApp:
-  name: chat-app
-  replicas: 1
-  containerName: chat-app
-  image:
-    repository: imzainazm/chat-app
-    tag: latest
-  containerPort: 7001
-  labels:
-    environment: staging
-  service:
-    name: chat-app-service
-    type: NodePort
-    port: 7001
-    targetPort: 7001
-    nodePort: 32001
-  configMap:
-    name: app-config
-    key: API_GATEWAY_URI
-    apiGatewayUri: "api-gateway-service:7000"
-
-
 secret: 
   name: db-secret
   type: Opaque
