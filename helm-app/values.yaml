@@ -1,3 +1,230 @@
+apiGateway:
+  name: api-gateway
+  replicas: 1
+  containerName: api-gateway
+  image:
+    repository: imzainazm/api-gateway
+    tag: latest
+  containerPort: 7000
+  labels:
+    environment: staging
+  service:
+    name: api-gateway-service
+    type: NodePort
+    port: 7000
+    targetPort: 7000
+    nodePort: 32000
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "300Mi"
+      cpu: "250m"
+
+
+chatApp:
+  name: chat-app
+  replicas: 1
+  containerName: chat-app
+  image:
+    repository: imzainazm/chat-app
+    tag: latest
+  containerPort: 7001
+  labels:
+    environment: staging
+  service:
+    name: chat-app-service
+    type: NodePort
+    port: 7001
+    targetPort: 7001
+    nodePort: 32001
+  configMap:
+    name: app-config
+    key: API_GATEWAY_URI
+    apiGatewayUri: "api-gateway-service:7000"
+
+
+
+chatService:
+  name: chat-service
+  replicas: 1
+  selector:
+    app: chat-service
+  containerName: chat-service
+  image:
+    repository: imzainazm/chat-service
+    tag: latest
+  containerPort: 7100
+  labels:
+    environment: staging
+  service:
+    name: chat-service
+    type: ClusterIP
+    port: 7100
+    targetPort: 7100
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "300Mi"
+      cpu: "250m"
+
+
+chatServiceDb:
+  name: chat-service-db
+  replicas: 1
+  selector:
+    app: chat-service-db
+  containerName: mysql
+  image:
+    repository: mysql
+    tag: 5.7.20
+  containerPort: 3306
+  labels:
+    environment: staging
+  env:
+    - name: MYSQL_ROOT_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: db-secret
+          key: MYSQL_ROOT_PASSWORD
+    - name: MYSQL_DATABASE
+      valueFrom:
+        secretKeyRef:
+          name: db-secret
+          key: MYSQL_DATABASE
+  volumeMounts:
+    name: mysql-storage
+    mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+    name: mysql-storage
+    accessModes: ReadWriteOnce
+    storage: 1Gi
+  service:
+    name: chat-service-db
+    type: ClusterIP
+    port: 3306
+    targetPort: 3306
+  secret:
+    name: db-secret
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "300Mi"
+      cpu: "250m"
+
+
+phpmyadmin:
+  name: phpmyadmin
+  replicas: 1
+  containerName: phpmyadmin
+  image:
+    repository: phpmyadmin/phpmyadmin
+    tag: latest
+  containerPort: 80
+  labels:
+    environment: staging
+  volumeMounts:
+    mountPath: /etc/phpmyadmin/config.user.inc.php
+    subPath: phpmyadmin-config.user.inc.php
+  volumes:
+    configMap:
+      name: app-config
+      items:
+        key: phpmyadmin-config.user.inc.php
+        path: phpmyadmin-config.user.inc.php
+  service:
+    name: phpmyadmin-service
+    type: NodePort
+    port: 80
+    targetPort: 80
+    nodePort: 32002
+  env:
+    mysqlRootPasswordSecretName: db-secret
+    mysqlRootPasswordSecretKey: MYSQL_ROOT_PASSWORD
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "300Mi"
+      cpu: "250m"
+
+
+usersService:
+  deployment:
+    name: users-service
+    replicas: 1
+    selector:
+      app: users-service
+    containerName: users-service
+    image:
+      repository: imzainazm/users-service
+      tag: latest
+    containerPort: 7101
+  labels:
+    environment: staging
+  service:
+    name: users-service
+    namespace: chat-app
+    selector:
+      app: users-service
+    ports:
+      port: 7101
+      targetPort: 7101
+    type: ClusterIP
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "300Mi"
+      cpu: "250m"
+
+
+usersServiceDb:
+  statefulsetName: users-service-db
+  replicaCount: 1
+  selector:
+    app: users-service-db
+  image:
+    repository: mysql
+    tag: 5.7.20
+  containerPort: 3306
+  labels:
+    environment: staging
+  volumeMounts:
+    mountPath: /var/lib/mysql
+  volumeClaim:
+    accessMode: ReadWriteOnce
+    storage: 1Gi
+  service:
+    name: users-service-db
+  ports:
+    port: 3306
+    targetPort: 3306
+  type: ClusterIP
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "300Mi"
+      cpu: "250m"
+
+service:
+  name: users-service-db
+  selector:
+    app: users-service-db
+  ports:
+    port: 3306
+    targetPort: 3306
+  type: ClusterIP
+
 secret: 
   name: db-secret
   type: Opaque
