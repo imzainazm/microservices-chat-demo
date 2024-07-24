@@ -28,7 +28,6 @@ pipeline {
                         TRIGGERED_BY = "Triggered by: ${COMMITTER_NAME}"
                     }
 
-                    // Fetch commit message
                     COMMIT_MESSAGE = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
 
                     echo TRIGGERED_BY
@@ -75,13 +74,21 @@ pipeline {
     post {
         success {
             script {
-                sendSlackNotification(true)
+                try {
+                    sendSlackNotification(true)
+                } catch (Exception e) {
+                    echo "Failed to send Slack notification: ${e.getMessage()}"
+                }
                 cleanupImages()
             }
         }
         failure {
             script {
-                sendSlackNotification(false)
+                try {
+                    sendSlackNotification(false)
+                } catch (Exception e) {
+                    echo "Failed to send Slack notification: ${e.getMessage()}"
+                }
                 cleanupImages()
             }
         }
