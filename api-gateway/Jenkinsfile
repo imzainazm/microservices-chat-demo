@@ -10,6 +10,7 @@ pipeline {
         SLACK_CHANNEL = '#pipeline-notifications'
         SLACK_TOKEN_CREDENTIAL_ID = 'slack-token'
         COMMITTER_NAME = ''
+        TRIGGERED_BY = ''
     }
 
     stages {
@@ -19,14 +20,14 @@ pipeline {
                     def commitInfo = sh(script: 'git log -1 --pretty=%an,%ae', returnStdout: true).trim().split(',')
                     COMMITTER_NAME = commitInfo[0]?.trim() ?: 'Unknown'
 
-                    // Check if the build was triggered manually
-                    def buildCause = currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)
-                    if (buildCause) {
-                        COMMITTER_NAME = "Triggered manually by: ${buildCause.getUserId()}"
+                    // Check the build causes
+                    def userCause = currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)
+                    if (userCause) {
+                        TRIGGERED_BY = "Triggered manually by: ${userCause.getUserName()}"
                     } else {
-                        COMMITTER_NAME = "Triggered by: ${COMMITTER_NAME}"
+                        TRIGGERED_BY = "Triggered by: ${COMMITTER_NAME}"
                     }
-                    echo COMMITTER_NAME
+                    echo TRIGGERED_BY
                 }
             }
         }
@@ -41,8 +42,8 @@ pipeline {
                         extensions: [],
                         userRemoteConfigs: [[url: 'https://github.com/imzainazm/microservices-chat-demo.git']]
                     ]
-                    currentBuild.description = COMMITTER_NAME
-                    echo COMMITTER_NAME
+                    currentBuild.description = TRIGGERED_BY
+                    echo TRIGGERED_BY
                 }
             }
         }
@@ -101,7 +102,7 @@ def sendSlackNotification(isSuccess) {
         botUser: true,
         channel: SLACK_CHANNEL,
         color: isSuccess ? '#00ff00' : '#ff0000',
-        message: "Pipeline ${pipelineStatus}\n${COMMITTER_NAME}\nEnvironment: ${environmentName}",
+        message: "Pipeline ${pipelineStatus}\n${TRIGGERED_BY}\nEnvironment: ${environmentName}",
         tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
     )
 }
