@@ -20,9 +20,9 @@ pipeline {
                     COMMITTER_NAME = commitInfo[0]?.trim() ?: 'Unknown'
 
                     // Check if the build was triggered manually
-                    def buildCause = currentBuild.rawBuild.getCauses()[0].getShortDescription()
-                    if (buildCause.contains("Started by user")) {
-                        COMMITTER_NAME = "Triggered manually by: ${currentBuild.rawBuild.getCauses()[0].getUserName()}"
+                    def buildCause = currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)
+                    if (buildCause) {
+                        COMMITTER_NAME = "Triggered manually by: ${buildCause.getUserId()}"
                     } else {
                         COMMITTER_NAME = "Triggered by: ${COMMITTER_NAME}"
                     }
