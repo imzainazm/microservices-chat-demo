@@ -11,7 +11,6 @@ pipeline {
         SLACK_TOKEN_CREDENTIAL_ID = 'slack-token'
         COMMITTER_NAME = ''
         TRIGGERED_BY = ''
-        COMMIT_MESSAGE = ''
     }
 
     stages {
@@ -27,11 +26,7 @@ pipeline {
                     } else {
                         TRIGGERED_BY = "Triggered by: ${COMMITTER_NAME}"
                     }
-
-                    COMMIT_MESSAGE = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
-
                     echo TRIGGERED_BY
-                    echo "Commit Message: ${COMMIT_MESSAGE}"
                 }
             }
         }
@@ -74,21 +69,13 @@ pipeline {
     post {
         success {
             script {
-                try {
-                    sendSlackNotification(true)
-                } catch (Exception e) {
-                    echo "Failed to send Slack notification: ${e.getMessage()}"
-                }
+                sendSlackNotification(true)
                 cleanupImages()
             }
         }
         failure {
             script {
-                try {
-                    sendSlackNotification(false)
-                } catch (Exception e) {
-                    echo "Failed to send Slack notification: ${e.getMessage()}"
-                }
+                sendSlackNotification(false)
                 cleanupImages()
             }
         }
@@ -114,7 +101,7 @@ def sendSlackNotification(isSuccess) {
         botUser: true,
         channel: SLACK_CHANNEL,
         color: isSuccess ? '#00ff00' : '#ff0000',
-        message: "Pipeline ${pipelineStatus}\n${TRIGGERED_BY}\nCommit Message: ${COMMIT_MESSAGE}\nEnvironment: ${environmentName}",
+        message: "Pipeline: ${pipelineStatus}\nTriggered By: ${TRIGGERED_BY}\nBranch Name: ${params.BRANCH_NAME}\nEnvironment: ${environmentName}",
         tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
     )
 }
