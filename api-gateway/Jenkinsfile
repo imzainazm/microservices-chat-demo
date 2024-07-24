@@ -20,7 +20,6 @@ pipeline {
                     def commitInfo = sh(script: 'git log -1 --pretty=%an,%ae', returnStdout: true).trim().split(',')
                     COMMITTER_NAME = commitInfo[0]?.trim() ?: 'Unknown'
 
-                    // Check the build causes
                     def userCause = currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)
                     if (userCause) {
                         TRIGGERED_BY = "Triggered manually by: ${userCause.getUserName()}"
