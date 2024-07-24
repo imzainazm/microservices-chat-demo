@@ -11,6 +11,7 @@ pipeline {
         SLACK_TOKEN_CREDENTIAL_ID = 'slack-token'
         COMMITTER_NAME = ''
         TRIGGERED_BY = ''
+        BRANCH_NAME = "${params.BRANCH_NAME}"
     }
 
     stages {
@@ -96,12 +97,12 @@ def dockerPush(imageName, tag) {
 def sendSlackNotification(isSuccess) {
     def pipelineStatus = isSuccess ? "Succeeded" : "Failed"
     def environmentName = env.JOB_NAME.split('/')[0] ?: 'Unknown'
-
+    
     slackSend(
         botUser: true,
         channel: SLACK_CHANNEL,
         color: isSuccess ? '#00ff00' : '#ff0000',
-        message: "Pipeline ${pipelineStatus}\n${TRIGGERED_BY}\nEnvironment: ${environmentName}",
+        message: "Pipeline ${pipelineStatus}\nBranch: ${BRANCH_NAME}\n${TRIGGERED_BY}\nEnvironment: ${environmentName}",
         tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
     )
 }
