@@ -22,7 +22,7 @@ pipeline {
 
                     def userCause = currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)
                     if (userCause) {
-                        TRIGGERED_BY = "Triggered manually by: ${userCause.getUserName()}"
+                        TRIGGERED_BY = "${userCause.getUserName()}"
                     } else {
                         TRIGGERED_BY = "Triggered by: ${COMMITTER_NAME}"
                     }
@@ -101,7 +101,11 @@ def sendSlackNotification(isSuccess) {
         botUser: true,
         channel: SLACK_CHANNEL,
         color: isSuccess ? '#00ff00' : '#ff0000',
-        message: "Pipeline: ${pipelineStatus}\nTriggered By: ${TRIGGERED_BY}\nBranch Name: ${params.BRANCH_NAME}\nEnvironment: ${environmentName}",
+        message: """Pipeline: ${pipelineStatus}
+                    Build Number: ${env.BUILD_NUMBER}
+                    Triggered By: ${TRIGGERED_BY}
+                    Branch Name: ${params.BRANCH_NAME}
+                    Environment: ${environmentName}""",
         tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
     )
 }
