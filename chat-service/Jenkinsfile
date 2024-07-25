@@ -22,7 +22,7 @@ pipeline {
 
                     def userCause = currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)
                     if (userCause) {
-                        TRIGGERED_BY = "Triggered manually by: ${userCause.getUserName()}"
+                        TRIGGERED_BY = "${userCause.getUserName()}"
                     } else {
                         TRIGGERED_BY = "Triggered by: ${COMMITTER_NAME}"
                     }
