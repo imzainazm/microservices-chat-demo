@@ -4,7 +4,6 @@ kind: Kustomization
 namespace: chat-app-prod
 
 resources:
-  - namespace.yaml
   - ../../base
 
 patchesStrategicMerge:
