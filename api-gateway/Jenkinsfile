@@ -90,7 +90,8 @@ def sendSlackNotification(isSuccess) {
         botUser: true,
         channel: SLACK_CHANNEL,
         color: isSuccess ? '#00ff00' : '#ff0000',
-        message: """Pipeline: ${pipelineStatus}
+        message: """Service Changed: api-gateway
+                    Pipeline: ${pipelineStatus}
                     Build Number: ${env.BUILD_NUMBER}
                     Triggered By: ${TRIGGERED_BY}
                     Branch Name: ${params.BRANCH_NAME}
