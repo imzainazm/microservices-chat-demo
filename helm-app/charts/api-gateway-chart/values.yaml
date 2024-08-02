@@ -10,10 +10,9 @@ apiGateway:
     environment: staging
   service:
     name: api-gateway-service
-    type: NodePort
+    type: ClusterIP
     port: 7000
     targetPort: 7000
-    nodePort: 32000
   resources:
     requests:
       memory: "128Mi"

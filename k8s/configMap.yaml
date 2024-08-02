@@ -3,4 +3,4 @@ kind: ConfigMap
 metadata:
   name: app-config
 data:
-  API_GATEWAY_URI: "api-gateway-service:7000"
+  API_GATEWAY_URI: "http://api-gateway-service:7000"

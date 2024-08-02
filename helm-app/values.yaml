@@ -42,7 +42,7 @@ chatApp:
   configMap:
     name: app-config
     key: API_GATEWAY_URI
-    apiGatewayUri: "api-gateway-service:7000"
+    apiGatewayUri: "http://api-gateway-service:7000"
 
 
 
