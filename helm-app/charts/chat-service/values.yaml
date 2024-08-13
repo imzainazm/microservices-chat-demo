@@ -1,0 +1,25 @@
+
+chatService:
+  name: chat-service
+  replicas: 1
+  selector:
+    app: chat-service
+  containerName: chat-service
+  image:
+    repository: imzainazm/chat-service
+    tag: latest
+  containerPort: 7100
+  labels:
+    environment: staging
+  service:
+    name: chat-service
+    type: ClusterIP
+    port: 7100
+    targetPort: 7100
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "300Mi"
+      cpu: "250m"

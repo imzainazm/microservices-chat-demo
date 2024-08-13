@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.usersServiceDb.statefulsetName }}
+spec:
+  serviceName: "{{ .Values.usersServiceDb.service.name }}"
+  replicas: {{ .Values.usersServiceDb.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.usersServiceDb.selector.app }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.usersServiceDb.selector.app }}
+        {{- range $key, $value := .Values.usersServiceDb.labels }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
+    spec:
+      containers:
+      - name: mysql
+        image: {{ .Values.usersServiceDb.image.repository }}:{{ .Values.usersServiceDb.image.tag }}
+        ports:
+        - containerPort: {{ .Values.usersServiceDb.containerPort }}
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secret.name }}
+              key: MYSQL_ROOT_PASSWORD
+        - name: MYSQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secret.name }}
+              key: MYSQL_DATABASE
+        volumeMounts:
+        - name: mysql-storage
+          mountPath: {{ .Values.usersServiceDb.volumeMounts.mountPath }}
+        resources:
+          requests:
+            memory: {{ .Values.usersServiceDb.resources.requests.memory }}
+            cpu: {{ .Values.usersServiceDb.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.usersServiceDb.resources.limits.memory }}
+            cpu: {{ .Values.usersServiceDb.resources.limits.cpu }}
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql-storage
+    spec:
+      accessModes: [ "{{ .Values.usersServiceDb.volumeClaim.accessMode | default "ReadWriteOnce "}}" ]
+      resources:
+        requests:
+          storage: {{ .Values.usersServiceDb.volumeClaim.storage }}
+      storageClassName: {{ .Values.usersServiceDb.volumeClaim.storageClassName | default "default" }}

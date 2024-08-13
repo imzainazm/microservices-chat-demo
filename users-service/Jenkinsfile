@@ -1,0 +1,105 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'BRANCH_NAME', defaultValue: 'develop', description: 'Branch to build')
+    }
+
+    environment {
+        DOCKER_CREDENTIALS_ID = 'c1269293-12a7-4ae4-a1fe-b048736d5658'
+        SLACK_CHANNEL = '#pipeline-notifications'
+        SLACK_TOKEN_CREDENTIAL_ID = 'slack-token'
+        TRIGGERED_BY = ''
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    checkout scm: [
+                        $class: 'GitSCM',
+                        branches: [[name: "*/${params.BRANCH_NAME}"]],
+                        doGenerateSubmoduleConfigurations: false,
+                        extensions: [],
+                        userRemoteConfigs: [[url: 'https://github.com/imzainazm/microservices-chat-demo.git']]
+                    ]
+
+                    def userCause = currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)
+                    if (userCause) {
+                        TRIGGERED_BY = "${userCause.getUserName()}"
+                    } else {
+                        TRIGGERED_BY = "Triggered manually"
+                    }
+                    currentBuild.description = TRIGGERED_BY
+                    echo TRIGGERED_BY
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    def shortCommitHash = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+                    dockerBuild("imzainazm/users-service", shortCommitHash, "./users-service")
+                }
+            }
+        }
+
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                script {
+                    def shortCommitHash = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+                    dockerPush("imzainazm/users-service", shortCommitHash)
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            script {
+                sendSlackNotification(true)
+                cleanupImages()
+            }
+        }
+        failure {
+            script {
+                sendSlackNotification(false)
+                cleanupImages()
+            }
+        }
+    }
+}
+
+def dockerBuild(imageName, tag, dockerfilePath) {
+    sh "docker build -t ${imageName}:latest -t ${imageName}:${tag} ${dockerfilePath}"
+}
+
+def dockerPush(imageName, tag) {
+    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
+        docker.image("${imageName}:latest").push()
+        docker.image("${imageName}:${tag}").push()
+    }
+}
+
+def sendSlackNotification(isSuccess) {
+    def pipelineStatus = isSuccess ? "Succeeded" : "Failed"
+    def environmentName = env.JOB_NAME.split('/')[0] ?: 'Unknown'
+
+    slackSend(
+        botUser: true,
+        channel: SLACK_CHANNEL,
+        color: isSuccess ? '#00ff00' : '#ff0000',
+        message: """Service Changed: users-service
+                    Pipeline: ${pipelineStatus}
+                    Build Number: ${env.BUILD_NUMBER}
+                    Triggered By: ${TRIGGERED_BY}
+                    Branch Name: ${params.BRANCH_NAME}
+                    Environment: ${environmentName}""",
+        tokenCredentialId: SLACK_TOKEN_CREDENTIAL_ID
+    )
+}
+
+def cleanupImages() {
+    sh 'docker image prune -af'
+}

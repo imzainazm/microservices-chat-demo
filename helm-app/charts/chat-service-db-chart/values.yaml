@@ -1,0 +1,44 @@
+chatServiceDb:
+  name: chat-service-db
+  replicas: 1
+  selector:
+    app: chat-service-db
+  containerName: mysql
+  image:
+    repository: mysql
+    tag: 5.7.20
+  containerPort: 3306
+  labels:
+    environment: staging
+  env:
+    - name: MYSQL_ROOT_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: db-secret
+          key: MYSQL_ROOT_PASSWORD
+    - name: MYSQL_DATABASE
+      valueFrom:
+        secretKeyRef:
+          name: db-secret
+          key: MYSQL_DATABASE
+  volumeMounts:
+    name: mysql-storage
+    mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+    name: mysql-storage
+    accessModes: ReadWriteOnce
+    storage: 1Gi
+  service:
+    name: chat-service-db
+    type: ClusterIP
+    port: 3306
+    targetPort: 3306
+  secret:
+    name: db-secret
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "300Mi"
+      cpu: "250m"

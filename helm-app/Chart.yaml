@@ -1,0 +1,28 @@
+apiVersion: v2
+name: helm-app
+description: Helm Chart for microservices-chat-demo Github repo.
+type: application
+version: 0.1.0
+appVersion: "1.16.0"
+dependencies:
+  - name: api-gateway-chart
+    version: 0.1.0
+    repository: "file://charts/api-gateway-chart"
+  - name: chat-service-db-chart
+    version: 0.1.0
+    repository: "file://charts/chat-service-db-chart"
+  - name: chat-service
+    version: 0.1.0
+    repository: "file://charts/chat-service"
+  - name: phpmyadmin-chart
+    version: 0.1.0
+    repository: "file://charts/phpmyadmin-chart"
+  - name: users-service-chart
+    version: 0.1.0
+    repository: "file://charts/users-service-chart"
+  - name: users-service-db
+    version: 0.1.0
+    repository: "file://charts/users-service-db"
+  - name: chat-app-chart
+    version: 0.1.0
+    repository: "file://charts/chat-app-chart"

@@ -1,0 +1,9 @@
+apiVersion: v2
+name: chat-app-chart
+description: A Helm chart for chat-app
+
+type: application
+
+version: 0.1.0
+
+appVersion: "1.16.0"

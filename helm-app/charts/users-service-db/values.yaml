@@ -1,0 +1,42 @@
+usersServiceDb:
+  statefulsetName: users-service-db
+  replicaCount: 1
+  selector:
+    app: users-service-db
+  image:
+    repository: mysql
+    tag: 5.7.20
+  containerPort: 3306
+  labels:
+    environment: staging
+  volumeMounts:
+    mountPath: /var/lib/mysql
+  volumeClaim:
+    accessMode: ReadWriteOnce
+    storage: 1Gi
+  service:
+    name: users-service-db
+  ports:
+    port: 3306
+    targetPort: 3306
+  type: ClusterIP
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "300Mi"
+      cpu: "250m"
+
+service:
+  name: users-service-db
+  selector:
+    app: users-service-db
+  ports:
+    port: 3306
+    targetPort: 3306
+  type: ClusterIP
+
+secret: 
+  name: db-secret
+  type: Opaque

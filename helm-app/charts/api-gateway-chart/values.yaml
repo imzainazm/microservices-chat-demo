@@ -1,0 +1,22 @@
+apiGateway:
+  name: api-gateway
+  replicas: 1
+  containerName: api-gateway
+  image:
+    repository: imzainazm/api-gateway
+    tag: latest
+  containerPort: 7000
+  labels:
+    environment: staging
+  service:
+    name: api-gateway-service
+    type: ClusterIP
+    port: 7000
+    targetPort: 7000
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "300Mi"
+      cpu: "250m"

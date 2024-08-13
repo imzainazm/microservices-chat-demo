@@ -1,0 +1,29 @@
+usersService:
+  deployment:
+    name: users-service
+    replicas: 1
+    selector:
+      app: users-service
+    containerName: users-service
+    image:
+      repository: imzainazm/users-service
+      tag: latest
+    containerPort: 7101
+  labels:
+    environment: staging
+  service:
+    name: users-service
+    namespace: chat-app
+    selector:
+      app: users-service
+    ports:
+      port: 7101
+      targetPort: 7101
+    type: ClusterIP
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "300Mi"
+      cpu: "250m"

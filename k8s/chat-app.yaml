@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chat-app
+  template:
+    metadata:
+      labels:
+        app: chat-app
+    spec:
+      containers:
+      - name: chat-app
+        image: imzainazm/chat-app:latest
+        ports:
+        - containerPort: 7001
+        env:
+        - name: API_GATEWAY_URI
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: API_GATEWAY_URI
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "300Mi"
+            cpu: "250m"

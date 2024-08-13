@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phpmyadmin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phpmyadmin
+  template:
+    metadata:
+      labels:
+        app: phpmyadmin
+    spec:
+      containers:
+      - name: phpmyadmin
+        image: phpmyadmin/phpmyadmin:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/phpmyadmin/config.user.inc.php
+          subPath: phpmyadmin-config.user.inc.php
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: MYSQL_ROOT_PASSWORD
+      volumes:
+      - name: config-volume
+        configMap:
+          name: app-config
+          items:
+            - key: phpmyadmin-config.user.inc.php
+              path: phpmyadmin-config.user.inc.php

@@ -1,0 +1,35 @@
+phpmyadmin:
+  name: phpmyadmin
+  replicas: 1
+  containerName: phpmyadmin
+  image:
+    repository: phpmyadmin/phpmyadmin
+    tag: latest
+  containerPort: 80
+  labels:
+    environment: staging
+  volumeMounts:
+    mountPath: /etc/phpmyadmin/config.user.inc.php
+    subPath: phpmyadmin-config.user.inc.php
+  volumes:
+    configMap:
+      name: app-config
+      items:
+        key: phpmyadmin-config.user.inc.php
+        path: phpmyadmin-config.user.inc.php
+  service:
+    name: phpmyadmin-service
+    type: NodePort
+    port: 80
+    targetPort: 80
+    nodePort: 32002
+  env:
+    mysqlRootPasswordSecretName: db-secret
+    mysqlRootPasswordSecretKey: MYSQL_ROOT_PASSWORD
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "300Mi"
+      cpu: "250m"
